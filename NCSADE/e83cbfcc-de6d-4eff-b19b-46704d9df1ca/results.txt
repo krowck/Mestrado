@@ -1,0 +1,12 @@
+ID: e83cbfcc-de6d-4eff-b19b-46704d9df1ca	Date: 2018-05-02 02:13:05	Runs: 10
+=================================================================================================================
+Gbest Overall: 200.0000
+Positions: [3.584428342435686, -1.8481265311213506]
+
+Gbest Average: 200.0000
+Gbest Median: 200.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Gbest Standard Deviation: 0.0000
+
+Elappsed Time Average: 140.7456
+Elappsed Time Standard Deviation: 1.7783
+=================================================================================================================
