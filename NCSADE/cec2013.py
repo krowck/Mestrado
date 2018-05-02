@@ -149,6 +149,7 @@ def how_many_goptima(pop, f, accuracy, popsize, pop_aux):
 	return count, seeds
 
 def find_seeds_indices(sorted_pop, radius):
+	print(sorted_pop)
 	seeds = []
 	seeds_idx = []
 	# Determine the species seeds: iterate through sorted population 
@@ -166,7 +167,7 @@ def find_seeds_indices(sorted_pop, radius):
 		if not found:
 			seeds.append(x)
 			seeds_idx.append(i)
-
+	print(seeds)
 	return seeds_idx
 
 
