@@ -360,15 +360,22 @@ class DE:
             results.write('Elappsed Time Standard Deviation: %.4f\n' % (stdev(elapTime_r)))
         results.write('=================================================================================================================\n')
 
+#FUNCTIONS AVAIABLE 
+    
+    # 1:five_uneven_peak_trap, 2:equal_maxima, 3:uneven_decreasing_maxima, 
+    #       4:himmelblau, 5:six_hump_camel_back, 6:shubert, 7:vincent, 8:shubert, 9:vincent,
+    #       10:modified_rastrigin_all, 11:CF1, 12:CF2, 13:CF3, 14:CF3, 15:CF4, 16:CF3, 
+    #       17:CF4, 18:CF3, 19:CF4, 20:CF4
+
 if __name__ == '__main__': 
     from ncsade import DE
-    nfunc = 4
+    nfunc = 6
     f = CEC2013(nfunc)
-    cost_func = himmelblau             # Fitness Function
+    cost_func = shubert             # Fitness Function
     dim = f.get_dimension()
-    max_iterations = 200 
+    max_iterations = 400 
     pop_size = 20
-    runs = 10
+    runs = 5
     p = DE()
     p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, maximize=True)
 
