@@ -172,6 +172,7 @@ class DE:
 
     def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, maximize=True, p1=0.5, p2=0.5, learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
         count_global = 0.0
+        PR = 0.0 #PEAK RATIO
         #generate execution identifier
         uid = uuid.uuid4()
         mkdir(str(uid))
@@ -212,7 +213,6 @@ class DE:
             #print(self.pop)
             #print(fpop)
             fbest,best = self.getBestSolution(maximize, fpop)
-            
             #evolution_step
             # generates crossover rate values
             crm = 0.5
@@ -321,9 +321,10 @@ class DE:
             self.ns2 = 0
             self.nf1 = 0
 
-
-        print("Media de picos encontrados = ", (count_global/runs)/f.get_no_goptima())
+        PR = (count_global/runs)/f.get_no_goptima()
+        #print("Media de picos encontrados = ", PR)
         
+
         fbestAux = [sum(x)/len(x) for x in zip(*avr_fbest_r)]
         diversityAux = [sum(x)/len(x) for x in zip(*avr_diversity_r)]
         self.generateGraphs(fbestAux, diversityAux, max_iterations, uid, 'Overall')
@@ -333,7 +334,8 @@ class DE:
             results.write('Positions: %s\n\n' % str(best_r[fbest_r.index(min(fbest_r))]))
         else:
             results.write('Gbest Overall: %.4f\n' % (max(fbest_r)))
-            results.write('Positions: %s\n\n' % str(best_r[fbest_r.index(max(fbest_r))]))
+            results.write('Positions: %s\n' % str(best_r[fbest_r.index(max(fbest_r))]))
+            results.write('Mean Peaks Found: %f\n\n' % PR)
 
         results.write('Gbest Average: %.4f\n' % (sum(fbest_r)/len(fbest_r)))
         results.write('Gbest Median: %.4f #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)\n' % (median(fbest_r)))
@@ -345,7 +347,7 @@ class DE:
         results.write('=================================================================================================================\n')
 
 if __name__ == '__main__': 
-    from sade import DE
+    from ncsade import DE
     nfunc = 4
     f = CEC2013(nfunc)
     cost_func = himmelblau             # Fitness Function
