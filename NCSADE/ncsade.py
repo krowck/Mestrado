@@ -144,7 +144,7 @@ class DE:
         #while(p1 == ind):
         #    p1 = choice(self.pop)
         #p2 = ind
-        #while(p2 == ind or p2 == p1):
+        #while(p2 == ind or p2 == p1):dasd
         #    p2 = choice(self.pop)
         #print(p1, p2)
         cutpoint = randint(0, dim-1)
