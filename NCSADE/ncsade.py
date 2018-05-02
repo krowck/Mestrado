@@ -1,6 +1,7 @@
 #imports
 from os import mkdir
 import math
+import numpy
 from statistics import median, stdev
 from matplotlib import pyplot as plt
 from time import gmtime, strftime, time
@@ -137,7 +138,7 @@ class DE:
 
         p1 = vec_aux[0]
         p2 = vec_aux[1]
-        p3 = vec_aux[3]
+        #p3 = vec_aux[3]
 
         #p1 = ind
         #while(p1 == ind):
@@ -170,8 +171,19 @@ class DE:
             if ind[d] > ub[k]:
                 ind[d] = ub[k] 
 
+    def euclidean_distance(self, alvo, j):
+        dist = []
+        for i in range(len(self.pop)):
+            if(j == i):
+                pass
+            else:
+                #dist.append(numpy.linalg.norm(self.pop[i] - alvo))
+                dist.append(distance.euclidean(self.pop[i], alvo))
+        return dist.index(min(dist))
+
     def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, maximize=True, p1=0.5, p2=0.5, learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
         count_global = 0.0
+        crowding_target = 0
         PR = 0.0 #PEAK RATIO
         #generate execution identifier
         uid = uuid.uuid4()
@@ -239,6 +251,8 @@ class DE:
 
                     fcandSol = func(candSol)
 
+                    crowding_target = self.euclidean_distance(candSol, ind)
+
                     if maximize == False:
                         if fcandSol <= fpop[ind]:
                             self.pop[ind] = candSol
@@ -254,10 +268,10 @@ class DE:
                             elif strategy == 2:
                                 self.nf2+=1
                     else:
-                        if fcandSol >= fpop[ind]:
-                            self.pop[ind] = candSol
-                            fpop[ind] = fcandSol
-                            cr_list.append(crossover_rate[ind])
+                        if fcandSol >= fpop[crowding_target]:
+                            self.pop[crowding_target] = candSol
+                            fpop[crowding_target] = fcandSol
+                            cr_list.append(crossover_rate[crowding_target])
                             if strategy == 1:
                                 self.ns1+=1
                             elif strategy == 2:
@@ -268,7 +282,7 @@ class DE:
                             elif strategy == 2:
                                 self.nf2+=1
  
-                    avrFit += fpop[ind]
+                    avrFit += fpop[crowding_target]
                 avrFit = avrFit/pop_size
                 self.diversity.append(self.updateDiversity())
 
