@@ -10,6 +10,7 @@ from cec2013 import *
 from scipy.spatial import distance
 from collections import Counter
 import uuid
+#import cProfile
 
 
 class DE:
@@ -217,7 +218,7 @@ class DE:
         for i in range(len(self.pop)):
             s = 0
             if k == i:
-                pass
+                dist.append(math.inf)
             else:
                 for j in range(dim):
                     diff = self.pop[i][j] - alvo[j]
@@ -232,7 +233,7 @@ class DE:
         for i in range(len(self.pop)):
             s = 0
             if k == i:
-                dist.append(-1)
+                dist.append(math.inf)
             else:
                 for j in range(dim):
                     diff = self.pop[i][j] - alvo[j]
@@ -276,10 +277,11 @@ class DE:
         #print(neighborhood_list)
         return neighborhood_list
 
-    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, m, maximize=True, p1=0.5, p2=0.5, learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
+    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, maximize=True, p1=0.5, p2=0.5, learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
         count_global = 0.0
         crowding_target = 0
         neighborhood_list = []
+        m = 0
         PR = 0.0 #PEAK RATIO
         #generate execution identifier
         uid = uuid.uuid4()
@@ -329,6 +331,12 @@ class DE:
             crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
             cr_list = []
             for iteration in range(max_iterations):
+                if pop_size <= 200:
+                    m=math.floor(5+5*((max_iterations-iteration)/max_iterations))
+                    print(m)
+                else:
+                    m=math.floor(5+10*((max_iterations-iteration)/max_iterations))
+                    print(m)
                 #neighborhood_list = self.generate_neighborhood(m, dim)
                 avrFit = 0.00
                 # #update_solutions
@@ -338,9 +346,11 @@ class DE:
                     weight_factor = gauss(0.5, 0.3)
                     weight_factor = 0.9
                     crossover_rate[ind] = 0.1
-                    if uniform(0,1) < p1:
+                    if uniform(0,1) < 1:
                         #print("IND A MUTAR:", self.pop[ind])
                         neighborhood_list = self.generate_neighborhood(ind, m, dim)
+                        #print(neighborhood_list)
+                        #sleep(5)
                         candSol = self.rand_1_bin(self.pop[ind], ind, dim, weight_factor, crossover_rate[ind], neighborhood_list, m)
                         strategy = 1
                     else:
@@ -434,10 +444,10 @@ class DE:
             self.diversity = []
             self.fbest_list = []
             p1 = p2 = 0.5
-            self.nf2 = 0
-            self.ns1 = 0
-            self.ns2 = 0
-            self.nf1 = 0
+            self.nf2 = 1
+            self.ns1 = 1
+            self.ns2 = 1
+            self.nf1 = 1
 
         PR = (count_global/runs)/f.get_no_goptima()
         #print("Media de picos encontrados = ", PR)
@@ -473,14 +483,16 @@ class DE:
 
 if __name__ == '__main__': 
     from ncsade import DE
-    nfunc = 10
+    funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
+    nfunc = 1
     f = CEC2013(nfunc)
-    cost_func = modified_rastrigin_all             # Fitness Function
+    cost_func = funcs[nfunc]             # Fitness Function
+    #print(cost_func)
     dim = f.get_dimension()
-    pop_size = 100
-    max_iterations = f.get_maxfes() // pop_size
-    m = (pop_size//10)
-    runs = 5
+    pop_size = 50
+    max_iterations = (f.get_maxfes() // pop_size)
+    #m = 10
+    runs = 1
     p = DE()
-    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, m, maximize=True)
+    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, maximize=True)
 
