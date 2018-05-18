@@ -85,12 +85,22 @@ class DE:
             for d in range(dim):
                 lp.append(uniform(lb[d],ub[d]))
             self.pop.append(lp)
-        #print(self.pop)
 
-    def evaluatePopulation(self, func):
+    def generateIndividual(self, alvo, dim, f):
+        ub = [0] * dim
+        lb = [0] * dim
+        for k in range(dim):
+            ub[k] = f.get_ubound(k)
+            lb[k] = f.get_lbound(k)
+        lp = []
+        for d in range(dim):
+            lp.append(uniform(lb[d],ub[d]))
+        self.pop[alvo] = lp
+
+    def evaluatePopulation(self, func, f):
         fpop = []
         for ind in self.pop:
-            fpop.append(func(ind)) 
+            fpop.append(f.evaluate(ind))
         return fpop 
 
     def getBestSolution(self, maximize, fpop):
@@ -110,30 +120,13 @@ class DE:
 
     def rand_1_bin(self, ind, alvo, dim, wf, cr, neighborhood_list, m):
         vec_candidates = []
-        #for k in range(0, len(self.pop)):
-        #    if neighborhood_list[alvo] == neighborhood_list[k]:
-        #        #print "entrou", buckets[j]
-        #        vec_candidates.append(k)
-        #print(vec_candidates)
-        #print(neighborhood_list)
-        #print(m, len(vec_candidates))
+
         vec_aux = sample(neighborhood_list, m)
 
         p1 = self.pop[vec_aux[0]]
         p2 = self.pop[vec_aux[1]]
         p3 = self.pop[vec_aux[2]]
 
-
-        #p1 = ind
-        #while(p1 == ind):
-        #    p1 = choice(self.pop)
-        #p2 = ind
-        #while(p2 == ind or p2 == p1):
-        #    p2 = choice(self.pop)
-        #p3 = ind
-        #while(p3 == ind or p3 == p1 or p3 == p2):
-        #    p3 = choice(self.pop)
-        #print(p1, p2, p3)
         cutpoint = randint(0, dim-1)
         candidateSol = []
         
@@ -147,36 +140,12 @@ class DE:
     
     def currentToBest_2_bin(self, ind, alvo, best, dim, wf, cr, neighborhood_list, m):
         vec_candidates = []
-        #for k in range(0, len(self.pop)):
-        ##    if neighborhood_list[alvo] == neighborhood_list[k]:
-                #print "entrou", buckets[j]
-        #        vec_candidates.append(k)
-
-        #print("NEI:", neighborhood_list)
-        #print(m, len(vec_candidates))
 
         vec_aux = sample(neighborhood_list, m)
 
-        #print("AUX:", vec_aux)
-        #sleep(1)
-        
         p1 = self.pop[vec_aux[0]]
         p2 = self.pop[vec_aux[1]]
-        #p3 = self.pop[vec_aux[2]]
 
-        #vec_aux = sample(self.pop, len(self.pop))
-
-        #p1 = vec_aux[0]
-        #p2 = vec_aux[1]
-        #p3 = vec_aux[3]
-
-        #p1 = ind
-        #while(p1 == ind):
-        #    p1 = choice(self.pop)
-        #p2 = ind
-        #while(p2 == ind or p2 == p1):dasd
-        #    p2 = choice(self.pop)
-        #print(p1, p2)
         cutpoint = randint(0, dim-1)
         candidateSol = []
         
@@ -201,16 +170,6 @@ class DE:
             if ind[d] > ub[k]:
                 ind[d] = ub[k] 
 
-    def euclidean_distance2(self, alvo, j):
-        dist = []
-        for i in range(len(self.pop)):
-            if(j == i):
-                pass
-            else:
-                #dist.append(numpy.linalg.norm(self.pop[i] - alvo))
-                dist.append(distance.euclidean(self.pop[i], alvo))
-        return dist.index(min(dist))
-
     def euclidean_distance(self, alvo, k, dim):
         s = 0
         dist = []
@@ -226,7 +185,7 @@ class DE:
                 dist.append(s)
         return dist.index(min(dist))
 
-    def euclidean_distance_vec(self, alvo, k, dim):
+    def euclidean_distance_vec(self, alvo, k, dim, f):
         s = 0
         dist = []
 
@@ -238,10 +197,14 @@ class DE:
                 for j in range(dim):
                     diff = self.pop[i][j] - alvo[j]
                     s += np.linalg.norm(diff)
-                dist.append(s)
+                if(s < 0.00001):
+                   self.generateIndividual(i, dim, f)
+                   i = i-1
+                else:
+                    dist.append(s)
         return dist
 
-    def generate_neighborhood_list(self, m, dim):
+    def generate_neighborhood_list(self, m, dim, f):
         vec_dist = []
         flag = 0
         neighborhood_list = [-1] * len(self.pop)
@@ -255,26 +218,18 @@ class DE:
                     if neighborhood_list[j] >= 0:
                         vec_dist[j] = math.inf
                 for k in range(m-1):
-                    #print(len(vec_dist))
                     neighborhood_list[vec_dist.index(min(vec_dist))] = flag
-
                     vec_dist[vec_dist.index(min(vec_dist))] = math.inf
-
-                    #print(neighborhood_list)
-                    #print(Counter(neighborhood_list))
                 flag += 1
-                #sleep(5)
-        #print(neighborhood_list)
         return neighborhood_list
 
-    def generate_neighborhood(self, ind, m, dim):
+    def generate_neighborhood(self, ind, m, dim, f):
         vec_dist = []
         neighborhood_list = [-1] * m
-        vec_dist = self.euclidean_distance_vec(self.pop[ind], ind, dim)
+        vec_dist = self.euclidean_distance_vec(self.pop[ind], ind, dim, f)
         for k in range(m):
             neighborhood_list[k] = vec_dist.index(min(vec_dist))
             vec_dist[vec_dist.index(min(vec_dist))] = math.inf
-        #print(neighborhood_list)
         return neighborhood_list
 
     def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, maximize=True, p1=0.5, p2=0.5, learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
@@ -319,11 +274,10 @@ class DE:
 
             #initial_generations
             self.generatePopulation(pop_size, dim, f)
-            fpop = self.evaluatePopulation(func)
+            #fpop = f.evaluate
+            fpop = self.evaluatePopulation(func, f)
 
 
-            #print(self.pop)
-            #print(fpop)
             fbest,best = self.getBestSolution(maximize, fpop)
             #evolution_step
             # generates crossover rate values
@@ -331,12 +285,11 @@ class DE:
             crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
             cr_list = []
             for iteration in range(max_iterations):
+                print(iteration)
                 if pop_size <= 200:
                     m=math.floor(5+5*((max_iterations-iteration)/max_iterations))
-                    print(m)
                 else:
                     m=math.floor(5+10*((max_iterations-iteration)/max_iterations))
-                    print(m)
                 #neighborhood_list = self.generate_neighborhood(m, dim)
                 avrFit = 0.00
                 # #update_solutions
@@ -344,13 +297,10 @@ class DE:
                 for ind in range(0,len(self.pop)):
                     # generate weight factor values
                     weight_factor = gauss(0.5, 0.3)
-                    weight_factor = 0.9
-                    crossover_rate[ind] = 0.1
+                    weight_factor = 0.5
+                    crossover_rate[ind] = 0.9
                     if uniform(0,1) < 1:
-                        #print("IND A MUTAR:", self.pop[ind])
-                        neighborhood_list = self.generate_neighborhood(ind, m, dim)
-                        #print(neighborhood_list)
-                        #sleep(5)
+                        neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
                         candSol = self.rand_1_bin(self.pop[ind], ind, dim, weight_factor, crossover_rate[ind], neighborhood_list, m)
                         strategy = 1
                     else:
@@ -360,12 +310,9 @@ class DE:
                     
                     self.boundsRes(candSol, f, dim)
 
-                    fcandSol = func(candSol)
-
+                    fcandSol = f.evaluate(candSol)
 
                     crowding_target = self.euclidean_distance(candSol, ind, dim)
-                    #crowding_target2 = self.euclidean_distance2(candSol, ind)
-
 
                     if maximize == False:
                         if fcandSol <= fpop[ind]:
@@ -406,11 +353,11 @@ class DE:
                 elapTime.append((time() - start)*1000.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
                 
-                if iteration%crPeriod == 0 and iteration!=0:
-                    crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
-                    if iteration%crmUpdatePeriod == 0:
-                        crm = sum(cr_list)/len(cr_list)
-                        cr_list = []
+                # if iteration%crPeriod == 0 and iteration!=0:
+                #     crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
+                #     if iteration%crmUpdatePeriod == 0:
+                #         crm = sum(cr_list)/len(cr_list)
+                #         cr_list = []
 
                 if iteration%learningPeriod == 0 and iteration!=0: 
                     p1 = (self.ns1*(self.ns2+self.nf2))/(self.ns2*(self.ns1+self.nf1)+self.ns1*(self.ns2+self.nf2))
@@ -429,11 +376,7 @@ class DE:
             avr_diversity_r.append(self.diversity)
 
             pop_aux = []
-            #for i in range(pop_size):
-            #    for j in range(dim):
-            #        pop_aux.append(self.pop[i][j])
             pop_aux = self.pop
-            #print("POP_AUX: ", pop_aux)
             count, seeds = how_many_goptima(self.pop, f, 0.001, len(self.pop), pop_aux)
 
             #print(count, seeds)
@@ -450,9 +393,7 @@ class DE:
             self.nf1 = 1
 
         PR = (count_global/runs)/f.get_no_goptima()
-        #print("Media de picos encontrados = ", PR)
         
-
         fbestAux = [sum(x)/len(x) for x in zip(*avr_fbest_r)]
         diversityAux = [sum(x)/len(x) for x in zip(*avr_diversity_r)]
         self.generateGraphs(fbestAux, diversityAux, max_iterations, uid, 'Overall')
@@ -461,6 +402,9 @@ class DE:
             results.write('Gbest Overall: %.4f\n' % (min(fbest_r)))
             results.write('Positions: %s\n\n' % str(best_r[fbest_r.index(min(fbest_r))]))
         else:
+            results.write('Tamanho da populacao: %d\n' % pop_size)
+            results.write('Iteracoes Maximas: %d\n' % max_iterations)
+            results.write('Funcao Otimizada: %s\n' % func)
             results.write('Gbest Overall: %.4f\n' % (max(fbest_r)))
             results.write('Positions: %s\n' % str(best_r[fbest_r.index(max(fbest_r))]))
             results.write('Mean Peaks Found: %f\n\n' % PR)
@@ -484,13 +428,13 @@ class DE:
 if __name__ == '__main__': 
     from ncsade import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 1
+    nfunc = 7
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     #print(cost_func)
     dim = f.get_dimension()
-    pop_size = 50
-    max_iterations = (f.get_maxfes() // pop_size)
+    pop_size = 500
+    max_iterations = (f.get_maxfes() // pop_size) 
     #m = 10
     runs = 1
     p = DE()

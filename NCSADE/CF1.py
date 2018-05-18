@@ -11,6 +11,7 @@ class CF1(CFunction):
 	def __init__(self, dim):
 		super(CF1, self).__init__(dim, 6)
 
+
 		# Initialize data for composition
 		self._CFunction__sigma_ = np.ones( self._CFunction__nofunc_ )
 		self._CFunction__bias_ = np.zeros( self._CFunction__nofunc_ )
@@ -18,9 +19,8 @@ class CF1(CFunction):
 		self._CFunction__lambda_ = np.array( [1.0, 1.0, 8.0, 8.0, 1.0/5.0, 1.0/5.0] )
 		
 		# Lower/Upper Bounds
-		self._CFunction__lbound_ = -5.0 * np.ones( dim )
-		self._CFunction__ubound_ = 5.0 * np.ones( dim )
-
+		self._CFunction__lbound_ = -5.0 * np.ones( (dim) )
+		self._CFunction__ubound_ = 5.0 * np.ones( (dim) )
 		# Load optima
 		o = np.loadtxt('data/optima.dat') 
 		if o.shape[1] >= dim:
