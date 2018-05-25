@@ -30,8 +30,13 @@ class DE:
         plt.savefig(str(uid) + '/graphs/run' + str(run) + '_' + 'convergence.png')
         plt.clf()                                                   
         plt.plot(range(0, max_iterations), diversity_list, 'b--')
+        #plt.ylim(ymin=0)
         plt.savefig(str(uid) + '/graphs/run' + str(run) + '_' + 'diversity.png')
-        plt.clf()                                                   
+        plt.clf()
+        plt.plot(range(0, max_iterations), diversity_list, 'b--')
+        plt.ylim(ymin=0)
+        plt.savefig(str(uid) + '/graphs/run' + str(run) + '_' + 'diversity_normalizado.png')
+        plt.clf()                                                 
         
     def updateDiversity(self):
         diversity = 0
@@ -197,7 +202,8 @@ class DE:
                 for j in range(dim):
                     diff = self.pop[i][j] - alvo[j]
                     s += np.linalg.norm(diff)
-                if(s < 0.00001):
+                if(s < 0.0000001):
+                   print("Hello!")
                    self.generateIndividual(i, dim, f)
                    i = i-1
                 else:
@@ -282,7 +288,11 @@ class DE:
             #evolution_step
             # generates crossover rate values
             crm = 0.5
+            Fl = 0.1
+            Fu = 0.9
+            tau1 = tau2 = 0.1
             crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
+            mutation_rate = [0.5] * pop_size
             cr_list = []
             for iteration in range(max_iterations):
                 print(iteration)
@@ -290,22 +300,37 @@ class DE:
                     m=math.floor(5+5*((max_iterations-iteration)/max_iterations))
                 else:
                     m=math.floor(5+10*((max_iterations-iteration)/max_iterations))
-                #neighborhood_list = self.generate_neighborhood(m, dim)
                 avrFit = 0.00
                 # #update_solutions
                 strategy = 0
+                #print(mutation_rate)
+                #print(crossover_rate)
+                #sleep(5)
                 for ind in range(0,len(self.pop)):
+
+                    rand1 = uniform(0, 1)
+                    rand2 = uniform(0, 1)
+                    rand3 = uniform(0, 1)
+                    rand4 = uniform(0, 1)
+
+                    if rand2 < tau1:
+                        mutation_rate[ind] = Fl + (rand1 * Fu)
+                    
+
+                    if rand4 < tau2:
+                        crossover_rate[ind] = rand3
+                    
                     # generate weight factor values
                     weight_factor = gauss(0.5, 0.3)
                     weight_factor = 0.5
-                    crossover_rate[ind] = 0.9
+                    #crossover_rate[ind] = 0.1
                     if uniform(0,1) < 1:
                         neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
-                        candSol = self.rand_1_bin(self.pop[ind], ind, dim, weight_factor, crossover_rate[ind], neighborhood_list, m)
+                        candSol = self.rand_1_bin(self.pop[ind], ind, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
                         strategy = 1
                     else:
                         neighborhood_list = self.generate_neighborhood(ind, m, dim)
-                        candSol = self.currentToBest_2_bin(self.pop[ind], ind, best, dim, weight_factor, crossover_rate[ind], neighborhood_list, m)
+                        candSol = self.currentToBest_2_bin(self.pop[ind], ind, best, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
                         strategy = 2
                     
                     self.boundsRes(candSol, f, dim)
@@ -332,7 +357,7 @@ class DE:
                         if fcandSol >= fpop[crowding_target]:
                             self.pop[crowding_target] = candSol
                             fpop[crowding_target] = fcandSol
-                            cr_list.append(crossover_rate[crowding_target])
+                            #cr_list.append(crossover_rate[crowding_target])
                             if strategy == 1:
                                 self.ns1+=1
                             elif strategy == 2:
@@ -428,13 +453,13 @@ class DE:
 if __name__ == '__main__': 
     from ncsade import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 7
+    nfunc = 20
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     #print(cost_func)
     dim = f.get_dimension()
-    pop_size = 500
-    max_iterations = (f.get_maxfes() // pop_size) 
+    pop_size = 200
+    max_iterations = (f.get_maxfes() // pop_size)
     #m = 10
     runs = 1
     p = DE()
