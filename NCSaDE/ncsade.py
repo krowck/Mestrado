@@ -20,10 +20,16 @@ class DE:
         self.m_nmdf = 0.00 #diversity variable
         self.diversity = []
         self.fbest_list = []
-        self.ns1 = 1
-        self.ns2 = 1
-        self.nf1 = 1
-        self.nf2 = 1
+        self.ns1 = 0
+        self.ns2 = 0
+        self.ns3 = 0
+        self.ns4 = 0
+        self.ns5 = 0
+        self.nf1 = 0
+        self.nf2 = 0
+        self.nf3 = 0
+        self.nf4 = 0
+        self.nf5 = 0
 
     def generateGraphs(self, fbest_list, diversity_list, max_iterations, uid, run):
         plt.plot(range(0, max_iterations), fbest_list, 'r--')
@@ -162,6 +168,75 @@ class DE:
 
         return candidateSol
 
+    def randToBest_2_bin(self, ind, alvo, best, dim, wf, cr, neighborhood_list, m):
+        vec_candidates = []
+
+        vec_aux = sample(neighborhood_list, m)
+
+        p1 = self.pop[vec_aux[0]]
+        p2 = self.pop[vec_aux[1]]
+        p3 = self.pop[vec_aux[2]]
+        p4 = self.pop[vec_aux[3]]
+
+        cutpoint = randint(0, dim-1)
+        candidateSol = []
+        
+        for i in range(dim):
+            if(i == cutpoint or uniform(0,1) < cr):
+                candidateSol.append(ind[i] + wf*(best[i] - ind[i]) + wf*(p1[i] - p2[i]) + wf*(p3[i] - p4[i]))
+                #candidateSol.append(ind[i]+wf*(best[i]-ind[i])+wf*(p1[i]-p2[i])) # -> rand(p3) , vetor diferença (wf*(p1[i]-p2[i]))
+            else:
+                candidateSol.append(ind[i])
+
+        return candidateSol
+
+    def rand_2_bin(self, ind, alvo, dim, wf, cr, neighborhood_list, m):
+        vec_candidates = []
+
+        vec_aux = sample(neighborhood_list, m)
+
+        p1 = self.pop[vec_aux[0]]
+        p2 = self.pop[vec_aux[1]]
+        p3 = self.pop[vec_aux[2]]
+        p4 = self.pop[vec_aux[3]]
+        p5 = self.pop[vec_aux[4]]
+
+        cutpoint = randint(0, dim-1)
+        candidateSol = []
+        
+        for i in range(dim):
+            if(i == cutpoint or uniform(0,1) < cr):
+                candidateSol.append(p5[i] + wf*(p1[i] - p2[i]) + wf*(p3[i] - p4[i]))
+                #candidateSol.append(ind[i]+wf*(best[i]-ind[i])+wf*(p1[i]-p2[i])) # -> rand(p3) , vetor diferença (wf*(p1[i]-p2[i]))
+            else:
+                candidateSol.append(ind[i])
+
+        return candidateSol
+
+    def currentToRand_1_bin(self, ind, alvo, dim, wf, cr, neighborhood_list, m):
+        vec_candidates = []
+
+        vec_aux = sample(neighborhood_list, m)
+
+        p1 = self.pop[vec_aux[0]]
+        p2 = self.pop[vec_aux[1]]
+        p3 = self.pop[vec_aux[2]]
+
+        cutpoint = randint(0, dim-1)
+        candidateSol = []
+        
+        for i in range(dim):
+            candidateSol.append(ind[i] + uniform(0,1)*(p1[i] - ind[i]) + wf*(p2[i] - p3[i]))
+
+        # for i in range(dim):
+        #     if(i == cutpoint or uniform(0,1) < cr):
+        #         candidateSol.append(ind[i]+wf*(best[i]-ind[i])+wf*(p1[i]-p2[i])) # -> rand(p3) , vetor diferença (wf*(p1[i]-p2[i]))
+        #     else:
+        #         candidateSol.append(ind[i])
+
+        return candidateSol
+
+
     def boundsRes(self, ind, f, dim):
         ub = [0] * dim
         lb = [0] * dim
@@ -202,8 +277,8 @@ class DE:
                 for j in range(dim):
                     diff = self.pop[i][j] - alvo[j]
                     s += np.linalg.norm(diff)
-                if(s < 0.0000001):
-                   print("Hello!")
+                if(s < 0.000001):
+                   print("Individuals too close, generating new one!")
                    self.generateIndividual(i, dim, f)
                    i = i-1
                 else:
@@ -238,7 +313,7 @@ class DE:
             vec_dist[vec_dist.index(min(vec_dist))] = math.inf
         return neighborhood_list
 
-    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, maximize=True, p1=0.5, p2=0.5, learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
+    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, maximize=True, p1=0.2, p2=0.2, p3=0.2, p4=0.2, p5=0.2 , learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
         count_global = 0.0
         crowding_target = 0
         neighborhood_list = []
@@ -288,12 +363,10 @@ class DE:
             #evolution_step
             # generates crossover rate values
             crm = 0.5
-            Fl = 0.1
-            Fu = 0.9
-            tau1 = tau2 = 0.1
             crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
-            mutation_rate = [0.5] * pop_size
+            #mutation_rate = [0.5] * pop_size
             cr_list = []
+
             for iteration in range(max_iterations):
                 print(iteration)
                 if pop_size <= 200:
@@ -308,31 +381,37 @@ class DE:
                 #sleep(5)
                 for ind in range(0,len(self.pop)):
 
-                    rand1 = uniform(0, 1)
-                    rand2 = uniform(0, 1)
-                    rand3 = uniform(0, 1)
-                    rand4 = uniform(0, 1)
-
-                    if rand2 < tau1:
-                        mutation_rate[ind] = Fl + (rand1 * Fu)
-                    
-
-                    if rand4 < tau2:
-                        crossover_rate[ind] = rand3
-                    
                     # generate weight factor values
-                    weight_factor = gauss(0.5, 0.3)
-                    weight_factor = 0.5
+                    #weight_factor = gauss(0.5, 0.3)
+                    #weight_factor = 0.5
+                    weight_factor = numpy.random.normal(0.5, 0.3)
+                    operator = uniform(0,1)
                     #crossover_rate[ind] = 0.1
-                    if uniform(0,1) < 1:
+                    if operator < p1:
+                        #print("Realizando Rand/1/bin")
                         neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
-                        candSol = self.rand_1_bin(self.pop[ind], ind, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
+                        candSol = self.rand_1_bin(self.pop[ind], ind, dim, weight_factor, crossover_rate[ind], neighborhood_list, m)
                         strategy = 1
-                    else:
-                        neighborhood_list = self.generate_neighborhood(ind, m, dim)
-                        candSol = self.currentToBest_2_bin(self.pop[ind], ind, best, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
+                    elif operator < p1 + p2:
+                        #print("Realizando currentToBest_2_bin")                     
+                        neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
+                        candSol = self.currentToBest_2_bin(self.pop[ind], ind, best, dim, weight_factor, crossover_rate[ind], neighborhood_list, m)
                         strategy = 2
-                    
+                    elif operator < p1 + p2 + p3:
+                        #print("Realizando randToBest_2_bin")  
+                        neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
+                        candSol = self.randToBest_2_bin(self.pop[ind], ind, best, dim, weight_factor, crossover_rate[ind], neighborhood_list, m)
+                        strategy = 3
+                    elif operator < p1 + p2 + p3 + p4:
+                        #print("Realizando rand_2_bin")  
+                        neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
+                        candSol = self.rand_2_bin(self.pop[ind], ind, dim, weight_factor, crossover_rate[ind], neighborhood_list, m)
+                        strategy = 4
+                    elif operator < p1 + p2 + p3 + p4 + p5:
+                        #print("Realizando currentToRand_1_bin")  
+                        neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
+                        candSol = self.currentToRand_1_bin(self.pop[ind], ind, dim, weight_factor, crossover_rate[ind], neighborhood_list, m)
+                        strategy = 5
                     self.boundsRes(candSol, f, dim)
 
                     fcandSol = f.evaluate(candSol)
@@ -357,16 +436,29 @@ class DE:
                         if fcandSol >= fpop[crowding_target]:
                             self.pop[crowding_target] = candSol
                             fpop[crowding_target] = fcandSol
-                            #cr_list.append(crossover_rate[crowding_target])
+                            cr_list.append(crossover_rate[crowding_target])
                             if strategy == 1:
                                 self.ns1+=1
                             elif strategy == 2:
                                 self.ns2+=1
+                            elif strategy == 3:
+                                self.ns3+=1
+                            elif strategy == 4:
+                                self.ns4+=1
+                            elif strategy == 5:
+                                self.ns5+=1
                         else:
+                            cr_list.append(crossover_rate[ind])
                             if strategy == 1:
                                 self.nf1+=1
                             elif strategy == 2:
                                 self.nf2+=1
+                            elif strategy == 3:
+                                self.nf3+=1
+                            elif strategy == 4:
+                                self.nf4+=1
+                            elif strategy == 5:
+                                self.nf5+=1
  
                     avrFit += fpop[crowding_target]
                 avrFit = avrFit/pop_size
@@ -378,19 +470,41 @@ class DE:
                 elapTime.append((time() - start)*1000.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
                 
-                # if iteration%crPeriod == 0 and iteration!=0:
-                #     crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
-                #     if iteration%crmUpdatePeriod == 0:
-                #         crm = sum(cr_list)/len(cr_list)
-                #         cr_list = []
+                if iteration%crPeriod == 0 and iteration!=0:
+                    crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
+                    if iteration%crmUpdatePeriod == 0:
+                        crm = sum(cr_list)/len(cr_list)
+                        cr_list = []
 
                 if iteration%learningPeriod == 0 and iteration!=0: 
-                    p1 = (self.ns1*(self.ns2+self.nf2))/(self.ns2*(self.ns1+self.nf1)+self.ns1*(self.ns2+self.nf2))
-                    p2 = 1-p1
+                    S1 = ((self.ns1)/(self.ns1+self.nf1)) + 0.01
+                    S2 = ((self.ns2)/(self.ns2+self.nf2)) + 0.01
+                    S3 = ((self.ns3)/(self.ns3+self.nf3)) + 0.01
+                    S4 = ((self.ns4)/(self.ns4+self.nf4)) + 0.01
+                    S5 = ((self.ns5)/(self.ns5+self.nf5)) + 0.01
+
+                    p1 = S1/(S1+S2+S3+S4+S5)
+                    p2 = S2/(S1+S2+S3+S4+S5)
+                    p3 = S3/(S1+S2+S3+S4+S5)
+                    p4 = S4/(S1+S2+S3+S4+S5)
+                    p5 = S5/(S1+S2+S3+S4+S5)
+
+                    print(p1, p2, p3, p4, p5, p1+p2+p3+p4+p5)
+                    #sleep(5)
+                    #p1 = (self.ns1*(self.ns2+self.nf2))/(self.ns2*(self.ns1+self.nf1)+self.ns1*(self.ns2+self.nf2))
+
+                    
+                    #print("P1 -> %.f", p1)
                     self.nf2 = 1
                     self.ns1 = 1
                     self.ns2 = 1
                     self.nf1 = 1
+                    self.nf3 = 1
+                    self.ns3 = 1
+                    self.ns4 = 1
+                    self.nf4 = 1
+                    self.nf5 = 1
+                    self.ns5 = 1
 
             records.write('Pos: %s\n\n' % str(best))
             fbest_r.append(fbest)
@@ -453,12 +567,12 @@ class DE:
 if __name__ == '__main__': 
     from ncsade import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 20
+    nfunc = 8
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     #print(cost_func)
     dim = f.get_dimension()
-    pop_size = 200
+    pop_size = 500
     max_iterations = (f.get_maxfes() // pop_size)
     #m = 10
     runs = 1
