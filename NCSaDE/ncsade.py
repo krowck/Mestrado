@@ -4,7 +4,7 @@ import math
 import numpy
 from statistics import median, stdev
 from matplotlib import pyplot as plt
-from time import gmtime, strftime, time, sleep
+from time import gmtime, strftime, localtime, time, sleep
 from random import uniform, choice, randint, gauss, sample
 from cec2013 import *
 from scipy.spatial import distance
@@ -31,18 +31,18 @@ class DE:
         self.nf4 = 0
         self.nf5 = 0
 
-    def generateGraphs(self, fbest_list, diversity_list, max_iterations, uid, run):
+    def generateGraphs(self, fbest_list, diversity_list, max_iterations, uid, run, dim, hora):
         plt.plot(range(0, max_iterations), fbest_list, 'r--')
-        plt.savefig(str(uid) + '/graphs/run' + str(run) + '_' + 'convergence.png')
+        plt.savefig(str(uid) + '_' + str(dim) + 'D_' + str(hora) + '/graphs/run' + str(run) + '_' + 'convergence.png')
         plt.clf()                                                   
         plt.plot(range(0, max_iterations), diversity_list, 'b--')
         #plt.ylim(ymin=0)
-        plt.savefig(str(uid) + '/graphs/run' + str(run) + '_' + 'diversity.png')
+        plt.savefig(str(uid) + '_' + str(dim) + 'D_' + str(hora) + '/graphs/run' + str(run) + '_' + 'diversity.png')
         plt.clf()
         plt.plot(range(0, max_iterations), diversity_list, 'b--')
         plt.ylim(ymin=0)
-        plt.savefig(str(uid) + '/graphs/run' + str(run) + '_' + 'diversity_normalizado.png')
-        plt.clf()                                                 
+        plt.savefig(str(uid) + '_' + str(dim) + 'D_'  + str(hora) + '/graphs/run' + str(run) + '_' + 'diversity_normalizado.png')
+        plt.clf()                                             
         
     def updateDiversity(self):
         diversity = 0
@@ -313,22 +313,24 @@ class DE:
             vec_dist[vec_dist.index(min(vec_dist))] = math.inf
         return neighborhood_list
 
-    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, maximize=True, p1=0.2, p2=0.2, p3=0.2, p4=0.2, p5=0.2 , learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
+    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, maximize=True, p1=0.2, p2=0.2, p3=0.2, p4=0.2, p5=0.2 , learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
         count_global = 0.0
         crowding_target = 0
         neighborhood_list = []
+        funcs = ["haha", "five_uneven_peak_trap", "equal_maxima", "uneven_decreasing_maxima", "himmelblau", "six_hump_camel_back", "shubert", "vincent", "shubert", "vincent", "modified_rastrigin_all", "CF1", "CF2", "CF3", "CF3", "CF4", "CF3", "CF4", "CF3", "CF4", "CF4"]
         m = 0
         PR = 0.0 #PEAK RATIO
         #generate execution identifier
-        uid = uuid.uuid4()
-        mkdir(str(uid))
-        mkdir(str(uid) + '/graphs')
+        #uid = uuid.uuid4()
+        hora = strftime("%H:%M:%S", localtime())
+        mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora))
+        mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) +'/graphs')
         #to record the results
-        results = open(str(uid) + '/results.txt', 'a')
-        records = open(str(uid) + '/records.txt', 'a')
-        results.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(uid ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
+        results = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/results.txt', 'a')
+        records = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/records.txt', 'a')
+        results.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
         results.write('=================================================================================================================\n')
-        records.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(uid ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
+        records.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
         records.write('=================================================================================================================\n')
         avr_fbest_r = []
         avr_diversity_r = []
@@ -495,22 +497,22 @@ class DE:
 
                     
                     #print("P1 -> %.f", p1)
-                    self.nf2 = 1
-                    self.ns1 = 1
-                    self.ns2 = 1
-                    self.nf1 = 1
-                    self.nf3 = 1
-                    self.ns3 = 1
-                    self.ns4 = 1
-                    self.nf4 = 1
-                    self.nf5 = 1
-                    self.ns5 = 1
+                    self.nf2 = 0
+                    self.ns1 = 0
+                    self.ns2 = 0
+                    self.nf1 = 0
+                    self.nf3 = 0
+                    self.ns3 = 0
+                    self.ns4 = 0
+                    self.nf4 = 0
+                    self.nf5 = 0
+                    self.ns5 = 0
 
             records.write('Pos: %s\n\n' % str(best))
             fbest_r.append(fbest)
             best_r.append(best)
             elapTime_r.append(elapTime[max_iterations-1])
-            self.generateGraphs(self.fbest_list, self.diversity, max_iterations, uid, r)
+            self.generateGraphs(self.fbest_list, self.diversity, max_iterations, funcs[nfunc], r, dim, hora)
             avr_fbest_r.append(self.fbest_list)
             avr_diversity_r.append(self.diversity)
 
@@ -525,17 +527,23 @@ class DE:
             self.m_nmdf = 0.00 
             self.diversity = []
             self.fbest_list = []
-            p1 = p2 = 0.5
-            self.nf2 = 1
-            self.ns1 = 1
-            self.ns2 = 1
-            self.nf1 = 1
+            p1 = p2 = p3 = p4 = p5 = 0.2
+            self.ns1 = 0            
+            self.nf1 = 0
+            self.ns2 = 0
+            self.nf2 = 0            
+            self.nf3 = 0
+            self.ns3 = 0
+            self.ns4 = 0
+            self.nf4 = 0
+            self.nf5 = 0
+            self.ns5 = 0
 
         PR = (count_global/runs)/f.get_no_goptima()
         
         fbestAux = [sum(x)/len(x) for x in zip(*avr_fbest_r)]
         diversityAux = [sum(x)/len(x) for x in zip(*avr_diversity_r)]
-        self.generateGraphs(fbestAux, diversityAux, max_iterations, uid, 'Overall')
+        self.generateGraphs(fbestAux, diversityAux, max_iterations, funcs[nfunc], 'Overall', dim, hora)
         records.write('=================================================================================================================')
         if maximize==False:
             results.write('Gbest Overall: %.4f\n' % (min(fbest_r)))
@@ -546,7 +554,7 @@ class DE:
             results.write('Funcao Otimizada: %s\n' % func)
             results.write('Gbest Overall: %.4f\n' % (max(fbest_r)))
             results.write('Positions: %s\n' % str(best_r[fbest_r.index(max(fbest_r))]))
-            results.write('Mean Peaks Found: %f\n\n' % PR)
+            results.write('Mean Peaks Found: %f (%f)\n\n' % (PR, (PR*f.get_no_goptima())))
 
         results.write('Gbest Average: %.4f\n' % (sum(fbest_r)/len(fbest_r)))
         results.write('Gbest Median: %.4f #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)\n' % (median(fbest_r)))
@@ -567,15 +575,15 @@ class DE:
 if __name__ == '__main__': 
     from ncsade import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 8
+    nfunc = 9
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     #print(cost_func)
     dim = f.get_dimension()
-    pop_size = 500
+    pop_size = 1000
     max_iterations = (f.get_maxfes() // pop_size)
     #m = 10
     runs = 1
     p = DE()
-    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, maximize=True)
+    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, maximize=True)
 
