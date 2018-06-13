@@ -322,7 +322,7 @@ class DE:
         PR = 0.0 #PEAK RATIO
         #generate execution identifier
         #uid = uuid.uuid4()
-        hora = strftime("%H:%M:%S", localtime())
+        hora = strftime("%Hh%Mm%S", localtime())
         mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora))
         mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) +'/graphs')
         #to record the results
