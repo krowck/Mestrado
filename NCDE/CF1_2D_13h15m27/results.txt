@@ -1,0 +1,13 @@
+ID: CF1	Date: 2018-06-14 16:15:27	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 250
+Iteracoes Maximas: 800
+Funcao Otimizada: <class 'CF1.CF1'>
+Gbest Overall: 0.0000
+Positions: [1.757743591123056, 1.5957372547859912]
+Mean Peaks Found: 0.666667 (4.000000)
+
+Gbest Average: 0.0000
+Gbest Median: 0.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 718572.6421
+=================================================================================================================

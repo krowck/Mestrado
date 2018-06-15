@@ -1,0 +1,13 @@
+ID: uneven_decreasing_maxima	Date: 2018-06-14 13:54:45	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 50
+Iteracoes Maximas: 1000
+Funcao Otimizada: <function uneven_decreasing_maxima at 0x7f8522503e18>
+Gbest Overall: 1.0000
+Positions: [0.07969977962355028]
+Mean Peaks Found: 1.000000 (1.000000)
+
+Gbest Average: 1.0000
+Gbest Median: 1.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 29158.6177
+=================================================================================================================

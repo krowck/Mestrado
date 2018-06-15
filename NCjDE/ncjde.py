@@ -217,23 +217,7 @@ class DE:
 
     def euclidean_distance_vec(self, alvo, k, dim, f):
         s = 0
-        dist = []
-        vec_aux2 = []
-        vec_aux2 = list(self.pop)
-        vec_aux2.remove(alvo)
-        #print(len(self.pop))
-        #print(len(vec_aux2))
-        vec_aux = []
-
-
-
-        vec_aux = sample(vec_aux2, 45)
-        #print(self.pop)
-        #print(vec_aux)
-        #sleep(5)
-        #print(alvo)
-        #print(len(vec_aux))
-        
+        dist = []        
 
         for i in range(len(self.pop)):
         #for i in range(len(vec_aux)):
@@ -346,7 +330,7 @@ class DE:
                 if pop_size <= 200:
                     m=math.floor(5+5*((max_iterations-iteration)/max_iterations))
                 else:
-                    m=math.floor(5+10*((max_iterations-iteration)/max_iterations))
+                    m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
                 avrFit = 0.00 
                 # #update_solutions
                 strategy = 0
@@ -502,7 +486,7 @@ class DE:
 if __name__ == '__main__': 
     from ncjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 7
+    nfunc = 8
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()

@@ -9,6 +9,7 @@ from random import uniform, choice, randint, gauss, sample
 from cec2013 import *
 from scipy.spatial import distance
 from collections import Counter
+import copy
 import uuid
 #import cProfile
 
@@ -249,7 +250,6 @@ class DE:
     def euclidean_distance_full(self, alvo, k, dim):
         s = 0
         dist = []
-
         for i in range(len(self.pop)):
             s = 0
             if k == i:
@@ -260,9 +260,9 @@ class DE:
                     s += np.linalg.norm(diff)
                 dist.append(s)
         self.full_euclidean.append(dist)
-        return dist
+        #return dist
 
-    def euclidean_distance_control(self, alvo, k, dim):
+    def euclidean_distance(self, alvo, k, dim, f):
         s = 0
         dist = []
 
@@ -274,71 +274,27 @@ class DE:
                 for j in range(dim):
                     diff = self.pop[i][j] - alvo[j]
                     s += np.linalg.norm(diff)
+                # if(s < 0.00000001):
+                #     print("Individuals too close! Generating new one.")
+                #     self.generateIndividual(i, dim, f)
+                #     i = i-1
                 dist.append(s)
-                self.full_euclidean[k] = dist
-        return self.full_euclidean
-
-    def euclidean_distance(self, alvo, k, dim):
-        s = 0
-        dist = []
-
-        for i in range(len(self.pop)):
-            s = 0
-            if k == i:
-                dist.append(math.inf)
-            else:
-                for j in range(dim):
-                    diff = self.pop[i][j] - alvo[j]
-                    s += np.linalg.norm(diff)
-                dist.append(s)
-        return dist.index(min(dist))
-
-    def euclidean_distance_vec(self, alvo, k, dim, f):
-        s = 0
-        dist = []
-
-        for i in range(len(self.pop)):
-            s = 0
-            if k == i:
-                dist.append(math.inf)
-            else:
-                for j in range(dim):
-                    diff = self.pop[i][j] - alvo[j]
-                    s += np.linalg.norm(diff)
-                if(s < 0.000001):
-                   print("Individuals too close, generating new one!")
-                   self.generateIndividual(i, dim, f)
-                   i = i-1
-                else:
-                    dist.append(s)
-        return dist
-
-    # def generate_neighborhood_list(self, m, dim, f):
-    #     vec_dist = []
-    #     flag = 0
-    #     neighborhood_list = [-1] * len(self.pop)
-    #     for i in range(len(self.pop)):
-    #         if neighborhood_list[i] >= 0:
-    #             pass
-    #         else:
-    #             neighborhood_list[i] = flag
-    #             vec_dist = self.euclidean_distance_vec(self.pop[i], i, dim)
-    #             for j in range(len(self.pop)):
-    #                 if neighborhood_list[j] >= 0:
-    #                     vec_dist[j] = math.inf
-    #             for k in range(m-1):
-    #                 neighborhood_list[vec_dist.index(min(vec_dist))] = flag
-    #                 vec_dist[vec_dist.index(min(vec_dist))] = math.inf
-    #             flag += 1
-    #     return neighborhood_list
+        return dist, dist.index(min(dist))
 
     def generate_neighborhood(self, ind, m, dim, f):
-        #vec_dist = []
+        vec_dist = []
+        vec_dist = list(self.full_euclidean[ind])
         neighborhood_list = [-1] * m
+        #print("VEC-DIST ANTES:", vec_dist)
+        #print(ind, m, dim)
+
         #vec_dist = self.euclidean_distance_vec(self.pop[ind], ind, dim, f)
         for k in range(m):
-            neighborhood_list[k] = self.full_euclidean[ind].index(min(self.full_euclidean[ind]))
-            self.full_euclidean[ind][self.full_euclidean[ind].index(min(self.full_euclidean[ind]))] = math.inf
+            neighborhood_list[k] = vec_dist.index(min(vec_dist))            
+            vec_dist[vec_dist.index(min(vec_dist))] = math.inf
+        #print("vec_aux>>>>>>>", vec_aux)
+        #print("VEC_DIST -->", vec_dist)
+        #print(self.full_euclidean)
         return neighborhood_list
 
     def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, maximize=True, p1=0.2, p2=0.2, p3=0.2, p4=0.2, p5=0.2 , learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
@@ -365,7 +321,7 @@ class DE:
         fbest_r = []
         best_r = []
         elapTime_r = []
-        
+        gg = []
         #runs
         for r in range(runs):
             elapTime = []
@@ -391,7 +347,6 @@ class DE:
             for ind in range(pop_size):                
                 self.euclidean_distance_full(self.pop[ind], ind, dim)
 
-            #print(self.full_euclidean)
 
             fbest,best = self.getBestSolution(maximize, fpop)
             #evolution_step
@@ -402,6 +357,7 @@ class DE:
             cr_list = []
 
             for iteration in range(max_iterations):
+                dist = []
                 print(iteration)
                 if pop_size <= 200:
                     m=math.floor(5+5*((max_iterations-iteration)/max_iterations))
@@ -419,12 +375,18 @@ class DE:
                     #weight_factor = gauss(0.5, 0.3)
                     #weight_factor = 0.5
                     weight_factor = numpy.random.normal(0.5, 0.3)
+                    #weight_factor = 0.9
+                    #crossover_rate[ind] = 0.1
                     operator = uniform(0,1)
                     #crossover_rate[ind] = 0.1
                     
                     if operator < p1:
+                        #print("FULL ->", self.full_euclidean)
                         #print("Realizando Rand/1/bin")
                         neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
+                        #print("FULL ->", self.full_euclidean)
+                        #sleep(5)
+                        #print(weight_factor, crossover_rate[ind])
                         candSol = self.rand_1_bin(self.pop[ind], ind, dim, weight_factor, crossover_rate[ind], neighborhood_list, m)
                         strategy = 1
                     elif operator < p1 + p2:
@@ -451,7 +413,7 @@ class DE:
 
                     fcandSol = f.evaluate(candSol)
 
-                    crowding_target = self.euclidean_distance(candSol, ind, dim)
+                    dist, crowding_target = self.euclidean_distance(candSol, ind, dim, f)
 
                     if maximize == False:
                         if fcandSol <= fpop[ind]:
@@ -471,7 +433,7 @@ class DE:
                         if fcandSol >= fpop[crowding_target]:
                             self.pop[crowding_target] = candSol
                             fpop[crowding_target] = fcandSol
-                            self.euclidean_distance_control(candSol, crowding_target, dim)
+                            self.full_euclidean[crowding_target] = dist
                             cr_list.append(crossover_rate[crowding_target])
                             if strategy == 1:
                                 self.ns1+=1
@@ -498,7 +460,8 @@ class DE:
  
                     avrFit += fpop[crowding_target]
                 avrFit = avrFit/pop_size
-                self.diversity.append(self.updateDiversity())
+                #self.diversity.append(self.updateDiversity())
+                self.diversity.append(0)
 
                 fbest,best = self.getBestSolution(maximize, fpop)
                 
@@ -512,12 +475,13 @@ class DE:
                         crm = sum(cr_list)/len(cr_list)
                         cr_list = []
 
-                if iteration%learningPeriod == 0 and iteration!=0: 
-                    S1 = ((self.ns1)/(self.ns1+self.nf1)) + 0.01
-                    S2 = ((self.ns2)/(self.ns2+self.nf2)) + 0.01
-                    S3 = ((self.ns3)/(self.ns3+self.nf3)) + 0.01
-                    S4 = ((self.ns4)/(self.ns4+self.nf4)) + 0.01
-                    S5 = ((self.ns5)/(self.ns5+self.nf5)) + 0.01
+                if iteration%learningPeriod == 0 and iteration!=0:
+                    print(self.ns1, self.nf1) 
+                    S1 = (self.ns1)/((self.ns1+self.nf1) + 0.01)
+                    S2 = (self.ns2)/((self.ns2+self.nf2) + 0.01)
+                    S3 = (self.ns3)/((self.ns3+self.nf3) + 0.01)
+                    S4 = (self.ns4)/((self.ns4+self.nf4) + 0.01)
+                    S5 = (self.ns5)/((self.ns5+self.nf5) + 0.01)
 
                     p1 = S1/(S1+S2+S3+S4+S5)
                     p2 = S2/(S1+S2+S3+S4+S5)
@@ -609,13 +573,13 @@ class DE:
 if __name__ == '__main__': 
     from ncsade import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 1
+    nfunc = 6
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     #print(cost_func)
     dim = f.get_dimension()
-    pop_size = 50
-    max_iterations = (f.get_maxfes() // pop_size)
+    pop_size = 250
+    max_iterations = (f.get_maxfes() // pop_size) 
     #m = 10
     runs = 1
     p = DE()

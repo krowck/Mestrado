@@ -1,0 +1,13 @@
+ID: shubert	Date: 2018-06-14 15:00:37	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 500
+Iteracoes Maximas: 800
+Funcao Otimizada: <function shubert at 0x7efe8bb2d048>
+Gbest Overall: 2709.0935
+Positions: [-1.425128420509487, -0.8003211015588997, -0.8003211018174562]
+Mean Peaks Found: 1.000000 (81.000000)
+
+Gbest Average: 2709.0935
+Gbest Median: 2709.0935 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 3396142.3328
+=================================================================================================================

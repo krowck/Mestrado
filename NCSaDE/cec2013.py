@@ -106,6 +106,7 @@ class CEC2013(object):
 
 def how_many_goptima(pop, f, accuracy, popsize, pop_aux):
 	# pop: NP, D
+
 	pop_aux = np.array(pop_aux)
 	NP = pop_aux.shape[0]
 	D = pop_aux.shape[1]
