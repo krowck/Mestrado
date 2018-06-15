@@ -236,11 +236,16 @@ class DE:
         vec_dist = []
         vec_dist = list(self.full_euclidean[ind])
         neighborhood_list = [-1] * m
+        #print("VEC-DIST ANTES:", vec_dist)
+        #print(ind, m, dim)
 
+        #vec_dist = self.euclidean_distance_vec(self.pop[ind], ind, dim, f)
         for k in range(m):
             neighborhood_list[k] = vec_dist.index(min(vec_dist))            
             vec_dist[vec_dist.index(min(vec_dist))] = math.inf
-
+        #print("vec_aux>>>>>>>", vec_aux)
+        #print("VEC_DIST -->", vec_dist)
+        #print(self.full_euclidean)
         return neighborhood_list
 
     def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, maximize=True, p1=0.5, p2=0.5, learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
