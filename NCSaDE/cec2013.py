@@ -107,9 +107,28 @@ class CEC2013(object):
 def how_many_goptima(pop, f, accuracy, popsize, pop_aux):
 	# pop: NP, D
 
+	# pop_aux[0] = [-3.395113021, -3.317307]
+	# pop_aux[1] = [4.14125693, 2.4770118101]
+	# pop_aux[2] = [-0.49969507, -4.01259708]
+	# pop_aux[3] = [-2.184984351, 1.687053938]
+	# pop_aux[4] = [1.7577435, 1.5957372547]
+	# pop_aux[5] = [-1.561544695, 4.400020671757]
+	# pop_aux[6] = [0.1628760722, 3.78150997]
+	# pop_aux[7] = [-1.481471, 3.674022685]
+
 	pop_aux = np.array(pop_aux)
 	NP = pop_aux.shape[0]
 	D = pop_aux.shape[1]
+
+	# pop[0] = [-3.395113021, -3.317307]
+	# pop[1] = [4.14125693, 2.4770118101]
+	# pop[2] = [-0.49969507, -4.01259708]
+	# pop[3] = [-2.184984351, 1.687053938]
+	# pop[4] = [1.7577435, 1.5957372547]
+	# pop[5] = [-1.561544695, 4.400020671757]
+	# pop[6] = [0.1628760722, 3.78150997]
+	# pop[7] = [-1.481471, 3.674022685]
+
 	#print("SIZE: ", NP, D)
 	#print(pop)
 	# Evaluate population
@@ -131,7 +150,7 @@ def how_many_goptima(pop, f, accuracy, popsize, pop_aux):
 	count = 0
 	goidx = []
 	fitness = []
-	print(sorted_pop)
+	#print(sorted_pop)
 	for idx in seeds_idx:
 		# evaluate seed
 		seed_fitness = spopfits[idx] #f.evaluate(sorted_pop[idx])

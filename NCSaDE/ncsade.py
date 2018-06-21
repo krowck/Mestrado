@@ -298,12 +298,13 @@ class DE:
         return neighborhood_list
 
     def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, maximize=True, p1=0.2, p2=0.2, p3=0.2, p4=0.2, p5=0.2 , learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
-        count_global = 0.0
+        
         crowding_target = 0
         neighborhood_list = []
         funcs = ["haha", "five_uneven_peak_trap", "equal_maxima", "uneven_decreasing_maxima", "himmelblau", "six_hump_camel_back", "shubert", "vincent", "shubert", "vincent", "modified_rastrigin_all", "CF1", "CF2", "CF3", "CF3", "CF4", "CF3", "CF4", "CF3", "CF4", "CF4"]
         m = 0
-        PR = 0.0 #PEAK RATIO
+        PR = []
+        SR = 0.0
         #generate execution identifier
         #uid = uuid.uuid4()
         hora = strftime("%Hh%Mm%S", localtime())
@@ -324,6 +325,7 @@ class DE:
         gg = []
         #runs
         for r in range(runs):
+            count_global = 0.0
             elapTime = []
             start = time()
             records.write('Run: %i\n' % r)
@@ -341,8 +343,17 @@ class DE:
 
             #initial_generations
             self.generatePopulation(pop_size, dim, f)
+            
+            
             #fpop = f.evaluate
             fpop = self.evaluatePopulation(func, f)
+
+
+
+            #print(fpop)
+
+
+            #sleep(5)
 
             for ind in range(pop_size):                
                 self.euclidean_distance_full(self.pop[ind], ind, dim)
@@ -433,7 +444,8 @@ class DE:
                         if fcandSol >= fpop[crowding_target]:
                             self.pop[crowding_target] = candSol
                             fpop[crowding_target] = fcandSol
-                            self.full_euclidean[crowding_target] = dist
+                            dist_correta, aux = self.euclidean_distance(candSol, crowding_target, dim, f)
+                            self.full_euclidean[crowding_target] = dist_correta
                             cr_list.append(crossover_rate[crowding_target])
                             if strategy == 1:
                                 self.ns1+=1
@@ -537,7 +549,12 @@ class DE:
             self.nf5 = 0
             self.ns5 = 0
 
-        PR = (count_global/runs)/f.get_no_goptima()
+
+            print("ENTROu")
+            PR.append(count_global/f.get_no_goptima())
+            print(PR[r])
+            if(PR[r] == 1):
+                SR += 1
         
         fbestAux = [sum(x)/len(x) for x in zip(*avr_fbest_r)]
         diversityAux = [sum(x)/len(x) for x in zip(*avr_diversity_r)]
@@ -552,7 +569,18 @@ class DE:
             results.write('Funcao Otimizada: %s\n' % func)
             results.write('Gbest Overall: %.4f\n' % (max(fbest_r)))
             results.write('Positions: %s\n' % str(best_r[fbest_r.index(max(fbest_r))]))
-            results.write('Mean Peaks Found: %f (%f)\n\n' % (PR, (PR*f.get_no_goptima())))
+            for i in range(0, runs):
+                results.write('Mean Peaks Found on Run %d: %f (%f)\n' % (i, PR[i], (PR[i]*f.get_no_goptima())))
+            if runs > 1:
+                results.write('Mean Peaks Found: %.4f\n' % (sum(PR)/runs))
+                results.write('Peak Ratio Standard Deviation: %.4f\n' % (stdev(PR)))
+                results.write('[')
+                for i in range(0, runs):
+                    results.write('%.5f, ' % PR[i])
+                results.write(']\n')
+
+            results.write('Success rate: %.4f\n\n' % (SR/runs))
+
 
         results.write('Gbest Average: %.4f\n' % (sum(fbest_r)/len(fbest_r)))
         results.write('Gbest Median: %.4f #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)\n' % (median(fbest_r)))
@@ -578,10 +606,10 @@ if __name__ == '__main__':
     cost_func = funcs[nfunc]             # Fitness Function
     #print(cost_func)
     dim = f.get_dimension()
-    pop_size = 250
-    max_iterations = (f.get_maxfes() // pop_size) 
+    pop_size = 6
+    max_iterations = (f.get_maxfes() // pop_size) // 1000
     #m = 10
-    runs = 1
+    runs = 3
     p = DE()
     p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, maximize=True)
 

@@ -23,8 +23,11 @@ class CF1(CFunction):
 		self._CFunction__ubound_ = 5.0 * np.ones( (dim) )
 		# Load optima
 		o = np.loadtxt('data/optima.dat') 
+		#print(o)
 		if o.shape[1] >= dim:
+			print("ENTROU")
 			self._CFunction__O_ = o[:self._CFunction__nofunc_, :dim] 
+			print(o[:self._CFunction__nofunc_, :dim])
 		else: # randomly initialize
 			self._CFunction__O_ = self._CFunction__lbound_ + (self._CFunction__ubound_ - self._CFunction__lbound_) * np.random.rand( (self._CFunction__nofunc_, dim) )
 

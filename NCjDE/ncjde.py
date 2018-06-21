@@ -22,6 +22,7 @@ class DE:
         self.m_nmdf = 0.00 #diversity variable
         self.diversity = []
         self.fbest_list = []
+        self.full_euclidean = []   
         self.ns1 = 1
         self.ns2 = 1
         self.nf1 = 1
@@ -200,7 +201,22 @@ class DE:
             if ind[d] > ub[k]:
                 ind[d] = ub[k] 
 
-    def euclidean_distance(self, alvo, k, dim):
+    def euclidean_distance_full(self, alvo, k, dim):
+        s = 0
+        dist = []
+        for i in range(len(self.pop)):
+            s = 0
+            if k == i:
+                dist.append(math.inf)
+            else:
+                for j in range(dim):
+                    diff = self.pop[i][j] - alvo[j]
+                    s += np.linalg.norm(diff)
+                dist.append(s)
+        self.full_euclidean.append(dist)
+        #return dist
+
+    def euclidean_distance(self, alvo, k, dim, f):
         s = 0
         dist = []
 
@@ -212,68 +228,38 @@ class DE:
                 for j in range(dim):
                     diff = self.pop[i][j] - alvo[j]
                     s += np.linalg.norm(diff)
+                # if(s < 0.00000001):
+                #     print("Individuals too close! Generating new one.")
+                #     self.generateIndividual(i, dim, f)
+                #     i = i-1
                 dist.append(s)
-        return dist.index(min(dist))
-
-    def euclidean_distance_vec(self, alvo, k, dim, f):
-        s = 0
-        dist = []        
-
-        for i in range(len(self.pop)):
-        #for i in range(len(vec_aux)):
-            s = 0
-            if k == i:
-                dist.append(math.inf)
-            else:
-                for j in range(dim):
-                    diff = self.pop[i][j] - alvo[j]
-                    s += np.linalg.norm(diff)
-                    #print(s)
-                if(s < 0.0000001):
-                   print("Individuals too close! Generating new one.")
-                   self.generateIndividual(i, dim, f)
-                   i = i-1
-                else:
-                    dist.append(s)
-        #sleep(1)
-        return dist
-
-    def generate_neighborhood_list(self, m, dim, f):
-        vec_dist = []
-        flag = 0
-        neighborhood_list = [-1] * len(self.pop)
-        for i in range(len(self.pop)):
-            if neighborhood_list[i] >= 0:
-                pass
-            else:
-                neighborhood_list[i] = flag
-                vec_dist = self.euclidean_distance_vec(self.pop[i], i, dim)
-                for j in range(len(self.pop)):
-                    if neighborhood_list[j] >= 0:
-                        vec_dist[j] = math.inf
-                for k in range(m-1):
-                    neighborhood_list[vec_dist.index(min(vec_dist))] = flag
-                    vec_dist[vec_dist.index(min(vec_dist))] = math.inf
-                flag += 1
-        return neighborhood_list
+        return dist, dist.index(min(dist))
 
     def generate_neighborhood(self, ind, m, dim, f):
         vec_dist = []
+        vec_dist = list(self.full_euclidean[ind])
         neighborhood_list = [-1] * m
-        vec_dist = self.euclidean_distance_vec(self.pop[ind], ind, dim, f)
+        #print("VEC-DIST ANTES:", vec_dist)
+        #print(ind, m, dim)
+
+        #vec_dist = self.euclidean_distance_vec(self.pop[ind], ind, dim, f)
         for k in range(m):
-            neighborhood_list[k] = vec_dist.index(min(vec_dist))
+            neighborhood_list[k] = vec_dist.index(min(vec_dist))            
             vec_dist[vec_dist.index(min(vec_dist))] = math.inf
+        #print("vec_aux>>>>>>>", vec_aux)
+        #print("VEC_DIST -->", vec_dist)
+        #print(self.full_euclidean)
         return neighborhood_list
 
     def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, maximize=True, p1=0.5, p2=0.5, learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
-        count_global = 0.0
+
         crowding_target = 0
         neighborhood_list = []
         funcs = ["haha", "five_uneven_peak_trap", "equal_maxima", "uneven_decreasing_maxima", "himmelblau", "six_hump_camel_back", "shubert", "vincent", "shubert", "vincent", "modified_rastrigin_all", "CF1", "CF2", "CF3", "CF3", "CF4", "CF3", "CF4", "CF3", "CF4", "CF4"]
         #print(">>>>>>>>>>", str(funcs[1]))
         m = 0
-        PR = 0.0 #PEAK RATIO
+        PR = [] #PEAK RATIO
+        SR = 0.0
         #generate execution identifier
         #uid = uuid.uuid4()
         hora = strftime("%Hh%Mm%S", localtime())
@@ -294,6 +280,7 @@ class DE:
         
         #runs
         for r in range(runs):
+            count_global = 0.0
             elapTime = []
             start = time()
             records.write('Run: %i\n' % r)
@@ -314,6 +301,10 @@ class DE:
             #fpop = f.evaluate
             fpop = self.evaluatePopulation(func, f)
 
+            for ind in range(pop_size):                
+                self.euclidean_distance_full(self.pop[ind], ind, dim)
+
+
 
             fbest,best = self.getBestSolution(maximize, fpop)
             #evolution_step
@@ -328,7 +319,7 @@ class DE:
             for iteration in range(max_iterations):
                 print(iteration)
                 if pop_size <= 200:
-                    m=math.floor(5+5*((max_iterations-iteration)/max_iterations))
+                    m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
                 else:
                     m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
                 avrFit = 0.00 
@@ -369,7 +360,7 @@ class DE:
 
                     fcandSol = f.evaluate(candSol)
 
-                    crowding_target = self.euclidean_distance(candSol, ind, dim)
+                    dist, crowding_target = self.euclidean_distance(candSol, ind, dim, f)
 
                     if maximize == False:
                         if fcandSol <= fpop[ind]:
@@ -388,8 +379,9 @@ class DE:
                     else:
                         if fcandSol >= fpop[crowding_target]:
                             self.pop[crowding_target] = candSol
+                            dist_correta, aux = self.euclidean_distance(candSol, crowding_target, dim, f)
+                            self.full_euclidean[crowding_target] = dist_correta
                             fpop[crowding_target] = fcandSol
-                            #cr_list.append(crossover_rate[crowding_target])
                             if strategy == 1:
                                 self.ns1+=1
                             elif strategy == 2:
@@ -402,7 +394,7 @@ class DE:
  
                     avrFit += fpop[crowding_target]
                 avrFit = avrFit/pop_size
-                self.diversity.append(self.updateDiversity())
+                self.diversity.append(0)
                 
 
                 fbest,best = self.getBestSolution(maximize, fpop)
@@ -450,7 +442,11 @@ class DE:
             self.ns2 = 1
             self.nf1 = 1
 
-        PR = (count_global/runs)/f.get_no_goptima()
+            print("ENTROu")
+            PR.append(count_global/f.get_no_goptima())
+            print(PR[r])
+            if(PR[r] == 1):
+                SR += 1
         
         fbestAux = [sum(x)/len(x) for x in zip(*avr_fbest_r)]
         diversityAux = [sum(x)/len(x) for x in zip(*avr_diversity_r)]
@@ -465,7 +461,17 @@ class DE:
             results.write('Funcao Otimizada: %s\n' % func)
             results.write('Gbest Overall: %.4f\n' % (max(fbest_r)))
             results.write('Positions: %s\n' % str(best_r[fbest_r.index(max(fbest_r))]))
-            results.write('Mean Peaks Found: %f (%f)\n\n' % (PR, (PR*f.get_no_goptima())))
+            for i in range(0, runs):
+                results.write('Mean Peaks Found on Run %d: %f (%f)\n' % (i, PR[i], (PR[i]*f.get_no_goptima())))
+            if runs > 1:
+                results.write('Mean Peaks Found: %.4f\n' % (sum(PR)/runs))
+                results.write('Peak Ratio Standard Deviation: %.4f\n' % (stdev(PR)))
+                results.write('[')
+                for i in range(0, runs):
+                    results.write('%.5f, ' % PR[i])
+                results.write(']\n')            
+            results.write('Success rate: %.4f\n\n' % (SR/runs))
+
 
         results.write('Gbest Average: %.4f\n' % (sum(fbest_r)/len(fbest_r)))
         results.write('Gbest Median: %.4f #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)\n' % (median(fbest_r)))
@@ -486,12 +492,12 @@ class DE:
 if __name__ == '__main__': 
     from ncjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 8
+    nfunc = 20
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 500
-    max_iterations = (f.get_maxfes() // pop_size)
+    pop_size = 100
+    max_iterations = (f.get_maxfes() // pop_size) // 4
     #m = 10
     runs = 1
     p = DE()
