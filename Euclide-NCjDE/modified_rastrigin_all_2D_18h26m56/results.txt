@@ -1,0 +1,14 @@
+ID: modified_rastrigin_all	Date: 2018-08-22 21:26:56	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 100
+Iteracoes Maximas: 2000
+Funcao Otimizada: <function modified_rastrigin_all at 0x7f23640889d8>
+Gbest Overall: -2.0000
+Positions: [0.16666666690345558, 0.374999999843507]
+Mean Peaks Found on Run 0: 1.000000 (12.000000)
+Success rate: 1.0000
+
+Gbest Average: -2.0000
+Gbest Median: -2.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 48219.9545
+=================================================================================================================
