@@ -609,12 +609,12 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 4
+    nfunc = 20
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 100
-    max_iterations = (f.get_maxfes() // pop_size) // 10
+    pop_size = 250
+    max_iterations = (f.get_maxfes() // pop_size) 
     #m = 10
     runs = 1
     p = DE()
