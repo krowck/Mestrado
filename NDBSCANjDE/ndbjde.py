@@ -1,4 +1,5 @@
 #imports
+import matplotlib
 from os import mkdir
 import math
 import numpy
@@ -12,7 +13,7 @@ from cec2013 import *
 from scipy.spatial import distance
 from collections import Counter
 from eucl_dist.cpu_dist import dist
-from eucl_dist.gpu_dist import dist as gdist
+#from eucl_dist.gpu_dist import dist as gdist
 from sklearn.cluster import DBSCAN
 from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
@@ -26,16 +27,13 @@ class DE:
 
     def __init__(self):
         self.pop = [] #population's positions
+        self.pop_gg = []
         self.pop_aux2 = []       
         self.m_nmdf = 0.00 #diversity variable
         self.diversity = []
         self.fbest_list = []
         self.full_euclidean = []   
         self.full_euclidean_aux = []
-        self.ns1 = 1
-        self.ns2 = 1
-        self.nf1 = 1
-        self.nf2 = 1
 
     def generateGraphs(self, fbest_list, diversity_list, max_iterations, uid, run, dim, hora):
         plt.plot(range(0, max_iterations), fbest_list, 'r--')
@@ -97,15 +95,15 @@ class DE:
             ub[k] = f.get_ubound(k)
             lb[k] = f.get_lbound(k)
 
-        # vec = sobol_seq.i4_sobol_generate(dim, pop_size)
+        vec = sobol_seq.i4_sobol_generate(dim, pop_size)
         
 
-        # for i in range(pop_size):
-        # 	lp = []
-        # 	for d in range(dim):
-        # 		print(vec[i][d])
-        # 		lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
-        # 	self.pop.append(lp)
+        for i in range(pop_size):
+        	lp = []
+        	for d in range(dim):
+        		print(vec[i][d])
+        		lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
+        	self.pop_gg.append(lp)
 
         
         for ind in range(pop_size):
@@ -371,40 +369,41 @@ class DE:
             #fpop = f.evaluate
             fpop = self.evaluatePopulation(func, f)
             self.pop_aux2 = self.pop
-
             
-            # X = StandardScaler(with_mean=False).fit_transform(self.pop)
+            X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-            # db = DBSCAN(eps=0.01, min_samples=5).fit(X)
-            # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-            # core_samples_mask[db.core_sample_indices_] = True
-            # labels = db.labels_
+            db = DBSCAN(eps=0.01, min_samples=5).fit(X)
+            core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+            core_samples_mask[db.core_sample_indices_] = True
+            labels = db.labels_
 
-            # # Number of clusters in labels, ignoring noise if present.
-            # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+            # Number of clusters in labels, ignoring noise if present.
+            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-            # print('Estimated number of clusters: %d' % n_clusters_)
+            print('Estimated number of clusters: %d' % n_clusters_)
 
-            # unique_labels = set(labels)
-            # colors = [plt.cm.Spectral(each)
-            #           for each in np.linspace(0, 1, len(unique_labels))]
-            # for k, col in zip(unique_labels, colors):
-            #     if k == -1:
-            #         # Black used for noise.
-            #         col = [0, 0, 0, 1]
+            unique_labels = set(labels)
+            colors = [plt.cm.Spectral(each)
+                      for each in np.linspace(0, 1, len(unique_labels))]
+            for k, col in zip(unique_labels, colors):
+                if k == -1:
+                    # Black used for noise.
+                    col = [0, 0, 0, 1]
 
-            #     class_member_mask = (labels == k)
+                class_member_mask = (labels == k)
 
-            #     xy = X[class_member_mask & core_samples_mask]
-            #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-            #              markeredgecolor='k', markersize=14)
+                xy = X[class_member_mask & core_samples_mask]
+                plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                         markeredgecolor='k', markersize=14)
 
-            #     xy = X[class_member_mask & ~core_samples_mask]
-            #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-            #              markeredgecolor='k', markersize=6)
+                xy = X[class_member_mask & ~core_samples_mask]
+                plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                         markeredgecolor='k', markersize=6)
 
-            # plt.title('Estimated number of clusters: %d' % n_clusters_)
-            # plt.show()
+            plt.title('Estimated number of clusters: %d' % n_clusters_)
+
+
+            #plt.show()
 
             #for ind in range(pop_size):                
             #    self.euclidean_distance_full(self.pop[ind], ind, dim)
@@ -430,6 +429,7 @@ class DE:
             mutation_rate = [0.5] * pop_size
             cr_list = []
             for iteration in range(max_iterations):
+
                 print(iteration)
                 if pop_size <= 200:
                     m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
@@ -459,13 +459,13 @@ class DE:
                     weight_factor = gauss(0.5, 0.3)
                     #weight_factor = 0.5
                     #crossover_rate[ind] = 0.1
-                    if uniform(0,1) < 1:
+                    if uniform(0,1) < 0:
                         neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
                         candSol = self.rand_1_bin(self.pop[ind], ind, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
                         #candSol = self.currentToRand_1_bin(self.pop[ind], ind, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
                         strategy = 1
                     else:
-                        neighborhood_list = self.generate_neighborhood(ind, m, dim)
+                        neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
                         candSol = self.currentToBest_2_bin(self.pop[ind], ind, best, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
                         strategy = 2
                     
@@ -512,7 +512,7 @@ class DE:
                         self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
 
 
-                    print(Counter(labels))
+                    #print(Counter(labels))
             
 
             X = StandardScaler(with_mean=False).fit_transform(self.pop)
@@ -546,7 +546,7 @@ class DE:
                          markeredgecolor='k', markersize=6)
 
             plt.title('Estimated number of clusters: %d' % n_clusters_)
-            plt.show()
+            #plt.show()
 
             records.write('Pos: %s\n\n' % str(best))
             fbest_r.append(fbest)
@@ -621,11 +621,11 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 8
+    nfunc = 12
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 200
+    pop_size = 250
     accuracy = 0.001
     max_iterations = (f.get_maxfes() // pop_size) 
     #m = 10
