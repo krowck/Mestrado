@@ -3,6 +3,7 @@ from os import mkdir
 import math
 import numpy
 import copy
+import sobol_seq
 from statistics import median, stdev
 from matplotlib import pyplot as plt
 from time import gmtime, strftime, localtime, time, sleep
@@ -11,6 +12,7 @@ from cec2013 import *
 from scipy.spatial import distance
 from collections import Counter
 from eucl_dist.cpu_dist import dist
+from eucl_dist.gpu_dist import dist as gdist
 from sklearn.cluster import DBSCAN
 from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
@@ -23,11 +25,13 @@ import uuid
 class DE:
 
     def __init__(self):
-        self.pop = [] #population's positions        
+        self.pop = [] #population's positions
+        self.pop_aux2 = []       
         self.m_nmdf = 0.00 #diversity variable
         self.diversity = []
         self.fbest_list = []
         self.full_euclidean = []   
+        self.full_euclidean_aux = []
         self.ns1 = 1
         self.ns2 = 1
         self.nf1 = 1
@@ -93,6 +97,17 @@ class DE:
             ub[k] = f.get_ubound(k)
             lb[k] = f.get_lbound(k)
 
+        # vec = sobol_seq.i4_sobol_generate(dim, pop_size)
+        
+
+        # for i in range(pop_size):
+        # 	lp = []
+        # 	for d in range(dim):
+        # 		print(vec[i][d])
+        # 		lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
+        # 	self.pop.append(lp)
+
+        
         for ind in range(pop_size):
             lp = []
             for d in range(dim):
@@ -230,6 +245,7 @@ class DE:
         self.pop = np.asarray(self.pop) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
         #print(self.pop)
         dist1 = dist(self.pop, self.pop)
+        #dist1 = dist(self.pop, self.pop)
         #print(dist1)
         self.pop = self.pop.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
         dist1 = dist1.tolist()
@@ -261,7 +277,7 @@ class DE:
         self.pop = np.asarray(self.pop) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
         #print(self.pop, alvo)
         dist1 = dist(alvo, self.pop)
-
+        #dist1 = dist(alvo, self.pop)
         #print(dist1)
         #print(np.argmin(dist1))
         self.pop = self.pop.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
@@ -290,7 +306,22 @@ class DE:
         #print(self.full_euclidean)
         return neighborhood_list
 
-    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, maximize=True, p1=0.5, p2=0.5, learningPeriod=50, crPeriod=5, crmUpdatePeriod=25):
+    def reset_pop(self, labels, counter, ncluster, m, dim, f):
+        temp = []
+        temp_aux = []
+        dist = []
+        alvo = 0
+        for k in range(ncluster):
+            temp = [i for i,x in enumerate(labels) if x==k]
+            temp_aux = sample(temp, len(temp)-m)
+            print(temp, len(temp), m)
+            for x in temp_aux:
+                self.generateIndividual(x, dim, f)
+                dist, alvo = self.euclidean_distance2(self.pop[x], x, dim)
+                self.full_euclidean[x] = dist
+        
+
+    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, accuracy, maximize=True):
 
         crowding_target = 0
         neighborhood_list = []
@@ -339,11 +370,12 @@ class DE:
             self.generatePopulation(pop_size, dim, f)
             #fpop = f.evaluate
             fpop = self.evaluatePopulation(func, f)
+            self.pop_aux2 = self.pop
 
             
             # X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-            # db = DBSCAN(eps=0.6, min_samples=10).fit(X)
+            # db = DBSCAN(eps=0.01, min_samples=5).fit(X)
             # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
             # core_samples_mask[db.core_sample_indices_] = True
             # labels = db.labels_
@@ -384,6 +416,7 @@ class DE:
                 self.full_euclidean[control][control] = math.inf
             #print(self.full_euclidean)
             #sleep(10)
+            self.full_euclidean_aux = self.full_euclidean
 
 
             fbest,best = self.getBestSolution(maximize, fpop)
@@ -399,7 +432,7 @@ class DE:
             for iteration in range(max_iterations):
                 print(iteration)
                 if pop_size <= 200:
-                    m=math.floor(5+3*((max_iterations-iteration)/max_iterations))
+                    m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
                 else:
                     m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
                 avrFit = 0.00 
@@ -442,69 +475,53 @@ class DE:
 
                     dist, crowding_target = self.euclidean_distance2(candSol, ind, dim)
 
-                    if maximize == False:
-                        if fcandSol <= fpop[ind]:
-                            self.pop[ind] = candSol
-                            fpop[ind] = fcandSol
-                            cr_list.append(crossover_rate[ind])
-                            if strategy == 1:
-                                self.ns1+=1
-                            elif strategy == 2:
-                                self.ns2+=1
-                        else:
-                            if strategy == 1:
-                                self.nf1+=1
-                            elif strategy == 2:
-                                self.nf2+=1
-                    else:
+                    if maximize == True:
                         if fcandSol >= fpop[crowding_target]:
+                            #self.pop_aux2[crowding_target] = candSol
                             self.pop[crowding_target] = candSol
                             dist_correta, aux = self.euclidean_distance2(candSol, crowding_target, dim)
+                            #self.full_euclidean_aux[crowding_target] = dist_correta
                             self.full_euclidean[crowding_target] = dist_correta
                             fpop[crowding_target] = fcandSol
-                            if strategy == 1:
-                                self.ns1+=1
-                            elif strategy == 2:
-                                self.ns2+=1
-                        else:
-                            if strategy == 1:
-                                self.nf1+=1
-                            elif strategy == 2:
-                                self.nf2+=1
+                            
  
                     avrFit += fpop[crowding_target]
+
                 avrFit = avrFit/pop_size
                 self.diversity.append(0)
-                
+                #self.pop = self.pop_aux2
+                #self.full_euclidean = self.full_euclidean_aux
 
                 fbest,best = self.getBestSolution(maximize, fpop)
                 
                 self.fbest_list.append(fbest)
-                elapTime.append((time() - start)*1000.0)
+                elapTime.append((time() - start)/60.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
-                
-                # if iteration%crPeriod == 0 and iteration!=0:
-                #     crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
-                #     if iteration%crmUpdatePeriod == 0:
-                #         crm = sum(cr_list)/len(cr_list)
-                #         cr_list = []
 
-                if iteration%learningPeriod == 0 and iteration!=0: 
-                    p1 = (self.ns1*(self.ns2+self.nf2))/(self.ns2*(self.ns1+self.nf1)+self.ns1*(self.ns2+self.nf2))
-                    p2 = 1-p1
-                    self.nf2 = 1
-                    self.ns1 = 1
-                    self.ns2 = 1
-                    self.nf1 = 1
+                if iteration%50 == 0:
+                    X = StandardScaler(with_mean=False).fit_transform(self.pop)
+
+                    db = DBSCAN(eps=0.1, min_samples=m).fit(X)
+                    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                    core_samples_mask[db.core_sample_indices_] = True
+                    labels = db.labels_
+
+                    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+
+                    if n_clusters_ > 0:
+                        self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
+
+
+                    print(Counter(labels))
+            
 
             X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-            db = DBSCAN(eps=0.01, min_samples=4).fit(X)
+            db = DBSCAN(eps=0.1, min_samples=5).fit(X)
             core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
             core_samples_mask[db.core_sample_indices_] = True
             labels = db.labels_
 
-            print(labels)
             # Number of clusters in labels, ignoring noise if present.
             n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
@@ -541,7 +558,7 @@ class DE:
 
             pop_aux = []
             pop_aux = self.pop
-            count, seeds = how_many_goptima(self.pop, f, 0.001, len(self.pop), pop_aux)
+            count, seeds = how_many_goptima(self.pop, f, accuracy, len(self.pop), pop_aux)
 
             #print(count, seeds)
             count_global += count
@@ -550,11 +567,6 @@ class DE:
             self.m_nmdf = 0.00 
             self.diversity = []
             self.fbest_list = []
-            p1 = p2 = 0.5
-            self.nf2 = 1
-            self.ns1 = 1
-            self.ns2 = 1
-            self.nf1 = 1
 
             print("ENTROu")
             PR.append(count_global/f.get_no_goptima())
@@ -609,14 +621,15 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 20
+    nfunc = 7
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
     pop_size = 250
+    accuracy = 0.001
     max_iterations = (f.get_maxfes() // pop_size) 
     #m = 10
     runs = 1
     p = DE()
-    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, maximize=True)
+    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, maximize=True)
 
