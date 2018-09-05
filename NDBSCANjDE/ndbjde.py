@@ -95,15 +95,15 @@ class DE:
             ub[k] = f.get_ubound(k)
             lb[k] = f.get_lbound(k)
 
-        vec = sobol_seq.i4_sobol_generate(dim, pop_size)
+        #vec = sobol_seq.i4_sobol_generate(dim, pop_size)
         
 
-        for i in range(pop_size):
-        	lp = []
-        	for d in range(dim):
-        		print(vec[i][d])
-        		lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
-        	self.pop_gg.append(lp)
+        # for i in range(pop_size):
+        # 	lp = []
+        # 	for d in range(dim):
+        # 		print(vec[i][d])
+        # 		lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
+        # 	self.pop_gg.append(lp)
 
         
         for ind in range(pop_size):
@@ -345,6 +345,8 @@ class DE:
         fbest_r = []
         best_r = []
         elapTime_r = []
+        ub = f.get_ubound(0)
+        lb = f.get_lbound(0)
         
         #runs
         for r in range(runs):
@@ -370,37 +372,37 @@ class DE:
             fpop = self.evaluatePopulation(func, f)
             self.pop_aux2 = self.pop
             
-            X = StandardScaler(with_mean=False).fit_transform(self.pop)
+            # X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-            db = DBSCAN(eps=0.01, min_samples=5).fit(X)
-            core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-            core_samples_mask[db.core_sample_indices_] = True
-            labels = db.labels_
+            # db = DBSCAN(eps=0.01, min_samples=5).fit(X)
+            # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+            # core_samples_mask[db.core_sample_indices_] = True
+            # labels = db.labels_
 
-            # Number of clusters in labels, ignoring noise if present.
-            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+            # # Number of clusters in labels, ignoring noise if present.
+            # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-            print('Estimated number of clusters: %d' % n_clusters_)
+            # print('Estimated number of clusters: %d' % n_clusters_)
 
-            unique_labels = set(labels)
-            colors = [plt.cm.Spectral(each)
-                      for each in np.linspace(0, 1, len(unique_labels))]
-            for k, col in zip(unique_labels, colors):
-                if k == -1:
-                    # Black used for noise.
-                    col = [0, 0, 0, 1]
+            # unique_labels = set(labels)
+            # colors = [plt.cm.Spectral(each)
+            #           for each in np.linspace(0, 1, len(unique_labels))]
+            # for k, col in zip(unique_labels, colors):
+            #     if k == -1:
+            #         # Black used for noise.
+            #         col = [0, 0, 0, 1]
 
-                class_member_mask = (labels == k)
+            #     class_member_mask = (labels == k)
 
-                xy = X[class_member_mask & core_samples_mask]
-                plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                         markeredgecolor='k', markersize=14)
+            #     xy = X[class_member_mask & core_samples_mask]
+            #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+            #              markeredgecolor='k', markersize=14)
 
-                xy = X[class_member_mask & ~core_samples_mask]
-                plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                         markeredgecolor='k', markersize=6)
+            #     xy = X[class_member_mask & ~core_samples_mask]
+            #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+            #              markeredgecolor='k', markersize=6)
 
-            plt.title('Estimated number of clusters: %d' % n_clusters_)
+            # plt.title('Estimated number of clusters: %d' % n_clusters_)
 
 
             #plt.show()
@@ -428,20 +430,35 @@ class DE:
             crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
             mutation_rate = [0.5] * pop_size
             cr_list = []
+
+            plt.ion()
+            xplot = []
+            yplot = []
+            fig, ax = plt.subplots()
+            sc = ax.scatter(xplot,yplot, s=2)
+
             for iteration in range(max_iterations):
 
                 print(iteration)
                 if pop_size <= 200:
                     m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
                 else:
-                    m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
+                    m=math.floor(5+5*((max_iterations-iteration)/max_iterations))
                 avrFit = 0.00 
                 # #update_solutions
                 strategy = 0
                 #print(mutation_rate)
                 #print(crossover_rate)
                 #sleep(5)
+
+                xplot = []
+                yplot = []
+                
+
                 for ind in range(0,len(self.pop)):
+
+                    xplot.append(self.pop[ind][0])
+                    yplot.append(self.pop[ind][1])
 
                     rand1 = uniform(0, 1)
                     rand2 = uniform(0, 1)
@@ -477,20 +494,33 @@ class DE:
 
                     if maximize == True:
                         if fcandSol >= fpop[crowding_target]:
-                            #self.pop_aux2[crowding_target] = candSol
-                            self.pop[crowding_target] = candSol
+                            self.pop_aux2[crowding_target] = candSol
+                            #self.pop[crowding_target] = candSol
                             dist_correta, aux = self.euclidean_distance2(candSol, crowding_target, dim)
-                            #self.full_euclidean_aux[crowding_target] = dist_correta
-                            self.full_euclidean[crowding_target] = dist_correta
+                            self.full_euclidean_aux[crowding_target] = dist_correta
+                            #self.full_euclidean[crowding_target] = dist_correta
                             fpop[crowding_target] = fcandSol
                             
  
                     avrFit += fpop[crowding_target]
 
+                self.pop = self.pop_aux2
+                self.full_euclidean = self.full_euclidean_aux
+
+                plt.xlim(lb, ub)
+                plt.ylim(lb, ub)
+
+                plt.draw()
+            
+                
+                sc.set_offsets(np.c_[xplot,yplot])
+                fig.canvas.draw_idle()
+                plt.pause(0.00000001)
+
+                #plt.waitforbuttonpress()
+
                 avrFit = avrFit/pop_size
                 self.diversity.append(0)
-                #self.pop = self.pop_aux2
-                #self.full_euclidean = self.full_euclidean_aux
 
                 fbest,best = self.getBestSolution(maximize, fpop)
                 
@@ -517,7 +547,7 @@ class DE:
 
             X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-            db = DBSCAN(eps=0.1, min_samples=5).fit(X)
+            db = DBSCAN(eps=0.3, min_samples=5).fit(X)
             core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
             core_samples_mask[db.core_sample_indices_] = True
             labels = db.labels_
@@ -621,7 +651,7 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 12
+    nfunc = 11
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
