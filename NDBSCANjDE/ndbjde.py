@@ -588,6 +588,29 @@ class DE:
 
             pop_aux = []
             pop_aux = self.pop
+
+            #CF4 - 3D
+            # self.pop[0] = [-3.395113021, -3.317307, 2.34683607]
+            # self.pop[1] = [4.14125693, 2.4770118101, 2.66982013]
+            # self.pop[2] = [-0.499695065, -4.012597084, -4.88089688]
+            # self.pop[3] = [-2.184984351, 1.687053938, 0.58786288]
+            # self.pop[4] = [1.7577435, 1.5957372547, -4.3089313 ]
+            # self.pop[5] = [-1.561544695, 4.400020671757, 3.28529486]
+            # self.pop[6] = [0.1628760722, 3.78150997, 4.52427265]
+            # self.pop[7] = [-1.481471, 3.674022685, -4.85865102]
+
+            #CF1 - 2D
+            # self.pop[0] = [-3.39511302, -3.3173072 ]
+            # self.pop[1] = [ 4.14125693,  2.47701181]
+            # self.pop[2] = [-0.49969507, -4.01259708]
+            # self.pop[3] = [-2.18498435,  1.68705394]
+            # self.pop[4] = [ 1.75774359,  1.59573725]
+            # self.pop[5] = [-1.5615447,   4.40002067]
+            # self.pop[6] = [0.1628760722, 3.78150997]
+            # self.pop[7] = [-1.481471, 3.674022685]
+
+            print(self.pop)
+
             count, seeds = how_many_goptima(self.pop, f, accuracy, len(self.pop), pop_aux)
 
             #print(count, seeds)
@@ -655,9 +678,10 @@ if __name__ == '__main__':
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 250
+    pop_size = 10
     accuracy = 0.001
     max_iterations = (f.get_maxfes() // pop_size) 
+    max_iterations = 1
     #m = 10
     runs = 1
     p = DE()
