@@ -32,7 +32,7 @@ class CFunction(object):
 		self.__dim_ = dim
 		self.__nofunc_ = nofunc
 
-	def evaluate(self, x): 
+	def evaluate(self, x):
 		pass
 	
 	def get_lbound(self, ivar):
@@ -49,6 +49,7 @@ class CFunction(object):
 		self.__fi_ = np.zeros(self.__nofunc_)
 
 		self.__calculate_weights(x)
+
 		for i in range(self.__nofunc_):
 			self.__transform_to_z(x, i)
 			self.__fi_[i] = self.__function_[i](self.__z_)
@@ -56,6 +57,8 @@ class CFunction(object):
 		tmpsum = np.zeros(self.__nofunc_)
 		for i in range(self.__nofunc_):
 			tmpsum[i] = self.__weight_[i] * (self.__C_ * self.__fi_[i] / self.__fmaxi_[i] + self.__bias_[i])
+		#print("VERIFICANDO...")
+		#print(tmpsum, MINMAX, self.__f_bias_)
 		return sum(tmpsum) * MINMAX + self.__f_bias_
 
 	def __calculate_weights(self, x):

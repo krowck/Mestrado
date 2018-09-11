@@ -95,22 +95,22 @@ class DE:
             ub[k] = f.get_ubound(k)
             lb[k] = f.get_lbound(k)
 
-        #vec = sobol_seq.i4_sobol_generate(dim, pop_size)
+        vec = sobol_seq.i4_sobol_generate(dim, pop_size)
         
 
-        # for i in range(pop_size):
-        # 	lp = []
-        # 	for d in range(dim):
-        # 		print(vec[i][d])
-        # 		lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
-        # 	self.pop_gg.append(lp)
+        for i in range(pop_size):
+        	lp = []
+        	for d in range(dim):
+        		print(vec[i][d])
+        		lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
+        	self.pop.append(lp)
 
         
-        for ind in range(pop_size):
-            lp = []
-            for d in range(dim):
-                lp.append(uniform(lb[d],ub[d]))
-            self.pop.append(lp)
+        # for ind in range(pop_size):
+        #     lp = []
+        #     for d in range(dim):
+        #         lp.append(uniform(lb[d],ub[d]))
+        #     self.pop.append(lp)
         #print(self.pop)
         #sleep(10)
 
@@ -476,7 +476,7 @@ class DE:
                     weight_factor = gauss(0.5, 0.3)
                     #weight_factor = 0.5
                     #crossover_rate[ind] = 0.1
-                    if uniform(0,1) < 0:
+                    if uniform(0,1) < 1:
                         neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
                         candSol = self.rand_1_bin(self.pop[ind], ind, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
                         #candSol = self.currentToRand_1_bin(self.pop[ind], ind, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
@@ -494,18 +494,18 @@ class DE:
 
                     if maximize == True:
                         if fcandSol >= fpop[crowding_target]:
-                            self.pop_aux2[crowding_target] = candSol
-                            #self.pop[crowding_target] = candSol
+                            #self.pop_aux2[crowding_target] = candSol
+                            self.pop[crowding_target] = candSol
                             dist_correta, aux = self.euclidean_distance2(candSol, crowding_target, dim)
-                            self.full_euclidean_aux[crowding_target] = dist_correta
-                            #self.full_euclidean[crowding_target] = dist_correta
+                            #self.full_euclidean_aux[crowding_target] = dist_correta
+                            self.full_euclidean[crowding_target] = dist_correta
                             fpop[crowding_target] = fcandSol
                             
  
                     avrFit += fpop[crowding_target]
 
-                self.pop = self.pop_aux2
-                self.full_euclidean = self.full_euclidean_aux
+                #self.pop = self.pop_aux2
+                #self.full_euclidean = self.full_euclidean_aux
 
                 plt.xlim(lb, ub)
                 plt.ylim(lb, ub)
@@ -515,7 +515,7 @@ class DE:
                 
                 sc.set_offsets(np.c_[xplot,yplot])
                 fig.canvas.draw_idle()
-                plt.pause(0.00000001)
+                plt.pause(0.0001)
 
                 #plt.waitforbuttonpress()
 
@@ -528,54 +528,54 @@ class DE:
                 elapTime.append((time() - start)/60.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
-                if iteration%50 == 0:
-                    X = StandardScaler(with_mean=False).fit_transform(self.pop)
+                # if iteration%50 == 0:
+                #     X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-                    db = DBSCAN(eps=0.1, min_samples=m).fit(X)
-                    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-                    core_samples_mask[db.core_sample_indices_] = True
-                    labels = db.labels_
+                #     db = DBSCAN(eps=0.1, min_samples=m).fit(X)
+                #     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                #     core_samples_mask[db.core_sample_indices_] = True
+                #     labels = db.labels_
 
-                    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+                #     n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-                    if n_clusters_ > 0:
-                        self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
+                #     if n_clusters_ > 0:
+                #         self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
 
 
                     #print(Counter(labels))
             
 
-            X = StandardScaler(with_mean=False).fit_transform(self.pop)
+            # X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-            db = DBSCAN(eps=0.3, min_samples=5).fit(X)
-            core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-            core_samples_mask[db.core_sample_indices_] = True
-            labels = db.labels_
+            # db = DBSCAN(eps=0.3, min_samples=5).fit(X)
+            # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+            # core_samples_mask[db.core_sample_indices_] = True
+            # labels = db.labels_
 
-            # Number of clusters in labels, ignoring noise if present.
-            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+            # # Number of clusters in labels, ignoring noise if present.
+            # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-            print('Estimated number of clusters: %d' % n_clusters_)
+            # print('Estimated number of clusters: %d' % n_clusters_)
 
-            unique_labels = set(labels)
-            colors = [plt.cm.Spectral(each)
-                      for each in np.linspace(0, 1, len(unique_labels))]
-            for k, col in zip(unique_labels, colors):
-                if k == -1:
-                    # Black used for noise.
-                    col = [0, 0, 0, 1]
+            # unique_labels = set(labels)
+            # colors = [plt.cm.Spectral(each)
+            #           for each in np.linspace(0, 1, len(unique_labels))]
+            # for k, col in zip(unique_labels, colors):
+            #     if k == -1:
+            #         # Black used for noise.
+            #         col = [0, 0, 0, 1]
 
-                class_member_mask = (labels == k)
+            #     class_member_mask = (labels == k)
 
-                xy = X[class_member_mask & core_samples_mask]
-                plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                         markeredgecolor='k', markersize=14)
+            #     xy = X[class_member_mask & core_samples_mask]
+            #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+            #              markeredgecolor='k', markersize=14)
 
-                xy = X[class_member_mask & ~core_samples_mask]
-                plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                         markeredgecolor='k', markersize=6)
+            #     xy = X[class_member_mask & ~core_samples_mask]
+            #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+            #              markeredgecolor='k', markersize=6)
 
-            plt.title('Estimated number of clusters: %d' % n_clusters_)
+            # plt.title('Estimated number of clusters: %d' % n_clusters_)
             #plt.show()
 
             records.write('Pos: %s\n\n' % str(best))
@@ -599,21 +599,66 @@ class DE:
             # self.pop[6] = [0.1628760722, 3.78150997, 4.52427265]
             # self.pop[7] = [-1.481471, 3.674022685, -4.85865102]
 
-            #CF1 - 2D
+
+            # CF1 - 2D
             # self.pop[0] = [-3.39511302, -3.3173072 ]
             # self.pop[1] = [ 4.14125693,  2.47701181]
-            # self.pop[2] = [-0.49969507, -4.01259708]
-            # self.pop[3] = [-2.18498435,  1.68705394]
+            # self.pop[2] = [-0.499695065382, -4.0125970848]
+            # self.pop[3] = [-2.18498435112,  1.6870539388]
+            # #self.pop[2] = [-0.49969507, -4.01259708]
+            # #self.pop[3] = [-2.18498435,  1.68705393]
             # self.pop[4] = [ 1.75774359,  1.59573725]
             # self.pop[5] = [-1.5615447,   4.40002067]
             # self.pop[6] = [0.1628760722, 3.78150997]
             # self.pop[7] = [-1.481471, 3.674022685]
+            # self.pop[8] = [-3.5477180790859295, 4.2755145150028451]
+            # self.pop[9] = [-1.9351333343067720, 3.3777433989028154]
+
+            #CF3 - 2D
+            # [[-3.39511302 -3.3173072 ]
+            # [ 4.14125693  2.47701181]
+            # [-0.49969507 -4.01259708]
+            # [-2.18498435  1.68705394]
+            # [ 1.75774359  1.59573725]
+            # [-1.5615447   4.40002067]]
+
+
+            # PONTOS DE OTIMOS GLOBAIS ENCONTRADOS PELO ALGORITMO !!!
+            # [[ 4.14125692  2.4770118 ]            
+            # [-3.39511302 -3.31730718]
+            # [-2.18498435  1.68705394]
+            # [-1.5615447   4.40002067]
+            # [ 1.75774359  1.59573725]
+            # [-0.49969507 -4.01259708]]
+
+
+            # [[-3.39511302 -3.3173072 ]
+            # [ 4.14125693  2.47701181]
+            # [-0.49969507 -4.01259708]
+            # [-2.18498435  1.68705394]
+            # [ 1.75774359  1.59573725]
+            # [-1.5615447   4.40002067]]
+
+            # self.pop[0] = [-3.3951130216688377, -3.3173071972012478]
+            # self.pop[1] = [4.1412569323950272, 2.4770118101548775]
+            # self.pop[2] = [-0.49969506538256958, -4.0125970848019490]
+            # self.pop[3] = [-2.1849843511337519, 1.6870539388189698]
+            # self.pop[4] = [1.7577435911230559, 1.5957372547859912]
+            # self.pop[5] = [-1.5615446958531698, 4.4000206717579662]
+            # self.pop[6] = [0.16287607224326184, 3.7815099725568899]
+            # self.pop[7] = [-1.4814715358981081, 3.6740226851151405]
+            # self.pop[8] = [-3.5477180790859295, 4.2755145150028451]
+            # self.pop[9] = [-1.9351333343067720, 3.3777433989028154]
+
+
 
             print(self.pop)
 
             count, seeds = how_many_goptima(self.pop, f, accuracy, len(self.pop), pop_aux)
 
-            #print(count, seeds)
+            print('Otimos Globais encontados: ')
+            print(seeds)
+            
             count_global += count
 
             self.pop = []
@@ -674,14 +719,14 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 11
+    nfunc = 13
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 10
+    pop_size = 250
     accuracy = 0.001
     max_iterations = (f.get_maxfes() // pop_size) 
-    max_iterations = 1
+    #max_iterations = 1
     #m = 10
     runs = 1
     p = DE()

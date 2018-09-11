@@ -41,8 +41,10 @@ class CEC2013(object):
 	def evaluate(self, x):
 		assert (len(x) == self.get_dimension())
 		if (self.__nfunc_ > 0 and self.__nfunc_ < 11): 
+
 			return self.__f_(x)
 		else:
+			#print(x)
 			return self.__f_.evaluate(x)
 
 	def get_lbound(self, n):
@@ -116,8 +118,14 @@ def how_many_goptima(pop, f, accuracy, popsize, pop_aux):
 	# pop_aux[6] = [0.1628760722, 3.78150997]
 	# pop_aux[7] = [-1.481471, 3.674022685]
 
+	# print(pop)
+	# print(pop_aux)
+
 	pop_aux = np.array(pop_aux)
+
+	# print(pop_aux)
 	NP = pop_aux.shape[0]
+
 	D = pop_aux.shape[1]
 
 	# pop[0] = [-3.395113021, -3.317307]
@@ -135,6 +143,7 @@ def how_many_goptima(pop, f, accuracy, popsize, pop_aux):
 	fits = np.zeros( popsize )
 	for i in range( popsize ):
 		fits[i] = f.evaluate(pop[i])
+		#print(fits[i])
 
 	# Descenting sorting
 	order = np.argsort(fits)[::-1]
@@ -166,7 +175,7 @@ def how_many_goptima(pop, f, accuracy, popsize, pop_aux):
 
 	# gather seeds
 	seeds = sorted_pop[goidx]
-	print(seeds)
+	#print(seeds)
 	return count, seeds
 
 def find_seeds_indices(sorted_pop, radius):
