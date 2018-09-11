@@ -317,7 +317,17 @@ class DE:
                 self.generateIndividual(x, dim, f)
                 dist, alvo = self.euclidean_distance2(self.pop[x], x, dim)
                 self.full_euclidean[x] = dist
+
+    def generate_individual_neighborhood(self, labels):
+        aux = []
+        indices = []
+        temp = []
+        dist = []
+        alvo = 0
+        indices = [i for i, x in enumerate(labels) if x == -1]
+        aux = sample(indices, k)
         
+
 
     def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, accuracy, maximize=True):
 
@@ -347,6 +357,7 @@ class DE:
         elapTime_r = []
         ub = f.get_ubound(0)
         lb = f.get_lbound(0)
+        min_value_vector = []
         
         #runs
         for r in range(runs):
@@ -504,6 +515,11 @@ class DE:
  
                     avrFit += fpop[crowding_target]
 
+                # idx = np.argpartition(fpop, 10)
+                # min_vector
+                # print([fpop[i] for i in idx[:5] if fpop[i] > -1000])
+
+                # sleep(10)
                 #self.pop = self.pop_aux2
                 #self.full_euclidean = self.full_euclidean_aux
 
@@ -528,55 +544,70 @@ class DE:
                 elapTime.append((time() - start)/60.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
-                # if iteration%50 == 0:
-                #     X = StandardScaler(with_mean=False).fit_transform(self.pop)
+                if iteration%100 == 0:
+                    X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-                #     db = DBSCAN(eps=0.1, min_samples=m).fit(X)
-                #     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-                #     core_samples_mask[db.core_sample_indices_] = True
-                #     labels = db.labels_
+                    db = DBSCAN(eps=0.2, min_samples=m).fit(X)
+                    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                    core_samples_mask[db.core_sample_indices_] = True
+                    labels = db.labels_
 
-                #     n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+                    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-                #     if n_clusters_ > 0:
-                #         self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
+                    # k = pop_size - Counter(labels).most_common(1)[0][1]
+                    # idx = np.argpartition(fpop, -k)
+                    
+                    # min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
+                    # print([fpop[i] for i in idx[-k:] if fpop[i] < -accuracy])
+                    # for i in idx[-k:]:
+                    #     if fpop[i] < -accuracy:
+                    #         print(i, fpop[i], self.pop[i])
+                    
+                    
+
+                    if n_clusters_ > 0:
+                        k = Counter(labels).most_common(1)[0][1]
+                        qtd_inutil = k/n_clusters_
+                        self.generate_individual_neighborhood()
+                        self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
 
 
-                    #print(Counter(labels))
+                    print(Counter(labels))
+                    print(Counter(labels).most_common(1)[0][1])
             
 
-            # X = StandardScaler(with_mean=False).fit_transform(self.pop)
+            X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-            # db = DBSCAN(eps=0.3, min_samples=5).fit(X)
-            # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-            # core_samples_mask[db.core_sample_indices_] = True
-            # labels = db.labels_
+            db = DBSCAN(eps=0.2, min_samples=m).fit(X)
+            core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+            core_samples_mask[db.core_sample_indices_] = True
+            labels = db.labels_
 
-            # # Number of clusters in labels, ignoring noise if present.
-            # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+            # Number of clusters in labels, ignoring noise if present.
+            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-            # print('Estimated number of clusters: %d' % n_clusters_)
+            print('Estimated number of clusters: %d' % n_clusters_)
 
-            # unique_labels = set(labels)
-            # colors = [plt.cm.Spectral(each)
-            #           for each in np.linspace(0, 1, len(unique_labels))]
-            # for k, col in zip(unique_labels, colors):
-            #     if k == -1:
-            #         # Black used for noise.
-            #         col = [0, 0, 0, 1]
+            unique_labels = set(labels)
+            colors = [plt.cm.Spectral(each)
+                      for each in np.linspace(0, 1, len(unique_labels))]
+            for k, col in zip(unique_labels, colors):
+                if k == -1:
+                    # Black used for noise.
+                    col = [0, 0, 0, 1]
 
-            #     class_member_mask = (labels == k)
+                class_member_mask = (labels == k)
 
-            #     xy = X[class_member_mask & core_samples_mask]
-            #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-            #              markeredgecolor='k', markersize=14)
+                xy = X[class_member_mask & core_samples_mask]
+                plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                         markeredgecolor='k', markersize=14)
 
-            #     xy = X[class_member_mask & ~core_samples_mask]
-            #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-            #              markeredgecolor='k', markersize=6)
+                xy = X[class_member_mask & ~core_samples_mask]
+                plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                         markeredgecolor='k', markersize=6)
 
-            # plt.title('Estimated number of clusters: %d' % n_clusters_)
-            #plt.show()
+            plt.title('Estimated number of clusters: %d' % n_clusters_)
+            plt.show()
 
             records.write('Pos: %s\n\n' % str(best))
             fbest_r.append(fbest)
@@ -719,11 +750,11 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 13
+    nfunc = 12
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 250
+    pop_size = 300
     accuracy = 0.001
     max_iterations = (f.get_maxfes() // pop_size) 
     #max_iterations = 1
