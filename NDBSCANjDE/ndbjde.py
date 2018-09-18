@@ -25,7 +25,7 @@ import uuid
 
 class DE:
 
-    def __init__(self):
+    def __init__(self, pop_size):
         self.pop = [] #population's positions
         self.pop_gg = []
         self.pop_aux2 = []       
@@ -34,6 +34,10 @@ class DE:
         self.fbest_list = []
         self.full_euclidean = []   
         self.full_euclidean_aux = []
+        self.crossover_rate = [gauss(0.5, 0.1) for i in range(pop_size)]
+        self.mutation_rate = [0.5] * pop_size
+        self.crossover_rate_T = [gauss(0.5, 0.1) for i in range(pop_size)]
+        self.mutation_rate_T = [0.5] * pop_size
 
     def generateGraphs(self, fbest_list, diversity_list, max_iterations, uid, run, dim, hora):
         plt.plot(range(0, max_iterations), fbest_list, 'r--')
@@ -154,6 +158,10 @@ class DE:
 
         return fbest,best
 
+    def printPopulation(self, fpop):
+        for ind in range(0,len(self.pop)):
+            print(self.pop[ind], fpop[ind])
+
     def rand_1_bin(self, ind, alvo, dim, wf, cr, neighborhood_list, m):
         vec_candidates = []
 
@@ -251,23 +259,6 @@ class DE:
             if ind[d] > ub[k]:
                 ind[d] = ub[k] 
 
-    # def euclidean_distance_full(self, alvo, k, dim):
-    #     #print(self.pop)
-    #     #sleep(5)
-    #     s = 0
-    #     dist = []
-    #     for i in range(len(self.pop)):
-    #         s = 0
-    #         if k == i:
-    #             dist.append(math.inf)
-    #         else:
-    #             for j in range(dim):
-    #                 diff = self.pop[i][j] - alvo[j]
-    #                 s += np.linalg.norm(diff)
-    #             dist.append(s)
-    #     self.full_euclidean.append(dist)
-        #return dist
-
     def euclidean_distance_full2(self, dim):
         dist1 = np.zeros((len(self.pop), dim))
         self.pop = np.asarray(self.pop) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
@@ -345,8 +336,9 @@ class DE:
             print(temp, len(temp), m)
             for x in temp_aux:
                 self.generateIndividual(x, dim, f)
-                dist, alvo = self.euclidean_distance2(self.pop[x], x, dim)
-                self.full_euclidean[x] = dist
+                #dist, alvo = self.euclidean_distance2(self.pop[x], x, dim)
+                #self.full_euclidean[x] = dist
+        self.euclidean_distance_full2(dim)
 
     def generate_individual_neighborhood(self, labels):
         aux = []
@@ -356,6 +348,28 @@ class DE:
         alvo = 0
         indices = [i for i, x in enumerate(labels) if x == -1]
         aux = sample(indices, k)
+
+    def update_jDE(self, pop_size):
+        Fl = 0.1
+        Fu = 0.9
+        tau1 = tau2 = 0.1
+
+
+        rand1 = uniform(0, 1)
+        rand2 = uniform(0, 1)
+        rand3 = uniform(0, 1)
+        rand4 = uniform(0, 1)
+
+        for ind in range(0,len(self.pop)):
+            if rand2 < tau1:
+                self.mutation_rate_T[ind] = Fl + (rand1 * Fu)
+            else:                   
+                self.mutation_rate_T[ind] = self.mutation_rate[ind]
+
+            if rand4 < tau2:
+                self.crossover_rate_T[ind] = rand3
+            else:
+                self.crossover_rate_T[ind] = self.crossover_rate[ind]
         
 
 
@@ -449,7 +463,6 @@ class DE:
             #plt.show()
 
             #for ind in range(pop_size):                
-            #    self.euclidean_distance_full(self.pop[ind], ind, dim)
             #print(self.full_euclidean)
             #self.full_euclidean = []
             self.euclidean_distance_full2(dim)
@@ -463,13 +476,9 @@ class DE:
 
             fbest,best = self.getBestSolution(maximize, fpop)
             #evolution_step
+            myCR = 0.0
+            myF = 0.0
             # generates crossover rate values
-            crm = 0.5
-            Fl = 0.1
-            Fu = 0.9
-            tau1 = tau2 = 0.1
-            crossover_rate = [gauss(crm, 0.1) for i in range(pop_size)]
-            mutation_rate = [0.5] * pop_size
             cr_list = []
 
             if dim == 2:
@@ -496,32 +505,22 @@ class DE:
                 xplot = []
                 yplot = []
                 
+                self.update_jDE(pop_size)                
+
 
                 for ind in range(0,len(self.pop)):
 
                     if dim == 2:
                         xplot.append(self.pop[ind][0])
                         yplot.append(self.pop[ind][1])
-
-                    rand1 = uniform(0, 1)
-                    rand2 = uniform(0, 1)
-                    rand3 = uniform(0, 1)
-                    rand4 = uniform(0, 1)
-
-                    if rand2 < tau1:
-                        mutation_rate[ind] = Fl + (rand1 * Fu)
                     
-
-                    if rand4 < tau2:
-                        crossover_rate[ind] = rand3
-                    
-                    # generate weight factor values
-                    weight_factor = gauss(0.5, 0.3)
-                    #weight_factor = 0.5
                     #crossover_rate[ind] = 0.1
+                    myCR = self.crossover_rate_T[ind]
+                    myF = self.mutation_rate_T[ind]
+
                     if uniform(0,1) < 1:
                         neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
-                        candSol = self.rand_1_bin(self.pop[ind], ind, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
+                        candSol = self.rand_1_bin(self.pop[ind], ind, dim, myCR, myF, neighborhood_list, m)
                         #candSol = self.currentToRand_1_bin(self.pop[ind], ind, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
                         strategy = 1
                     else:
@@ -535,7 +534,6 @@ class DE:
 
                     dist, crowding_target = self.euclidean_distance2(candSol, ind, dim)
 
-
                     if maximize == True:
                         if fcandSol >= fpop[crowding_target]:
                             self.pop_aux2[crowding_target] = candSol
@@ -545,7 +543,8 @@ class DE:
                             #self.full_euclidean[crowding_target] = dist_correta
                             fpop[crowding_target] = fcandSol
                             
- 
+                        self.mutation_rate[ind] = self.mutation_rate_T[ind]
+                        self.crossover_rate[ind] = self.crossover_rate_T[ind]
                     avrFit += fpop[crowding_target]
 
                 # idx = np.argpartition(fpop, 10)
@@ -553,6 +552,7 @@ class DE:
                 # print([fpop[i] for i in idx[:5] if fpop[i] > -1000])
 
                 # sleep(10)
+
                 self.pop = self.pop_aux2
                 self.euclidean_distance_full2(dim)
                 self.full_euclidean = self.full_euclidean.pop()
@@ -569,7 +569,7 @@ class DE:
                     
                     sc.set_offsets(np.c_[xplot,yplot])
                     fig.canvas.draw_idle()
-                    plt.pause(100)
+                    plt.pause(0.0001)
 
                 #plt.waitforbuttonpress()
 
@@ -585,7 +585,7 @@ class DE:
                 # if iteration%100 == 0:
                 #     X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-                #     db = DBSCAN(eps=0.2, min_samples=m).fit(X)
+                #     db = DBSCAN(eps=0.5, min_samples=m).fit(X)
                 #     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
                 #     core_samples_mask[db.core_sample_indices_] = True
                 #     labels = db.labels_
@@ -603,16 +603,16 @@ class DE:
                     
                     
 
-                #     if n_clusters_ > 0 and n_clusters_ < 4:
+                #     if n_clusters_ > 0:
                 #         self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
-                #     else:
-                #         k = Counter(labels).most_common(1)[0][1]
-                #         qtd_inutil = k/n_clusters_
-                #         self.generate_individual_neighborhood()
+                    # else:
+                    #     k = Counter(labels).most_common(1)[0][1]
+                    #     qtd_inutil = k/n_clusters_
+                    #     self.generate_individual_neighborhood()
 
 
-                #     print(Counter(labels))
-                #     print(Counter(labels).most_common(1)[0][1])
+                    # print(Counter(labels))
+                    # print(Counter(labels).most_common(1)[0][1])
             
             if dim >= 2:
                 X = StandardScaler(with_mean=False).fit_transform(self.pop)
@@ -721,8 +721,8 @@ class DE:
             # self.pop[9] = [-1.9351333343067720, 3.3777433989028154]
 
 
-
-            print(self.pop)
+            self.printPopulation(fpop)
+            #print(self.pop)
 
             count, seeds = how_many_goptima(self.pop, f, accuracy, len(self.pop), pop_aux)
 
@@ -789,16 +789,17 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 6
+    nfunc = 9
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 100
+    pop_size = 1000
     accuracy = 0.001
     max_iterations = (f.get_maxfes() // pop_size) 
     #max_iterations = 1
     #m = 10
     runs = 1
-    p = DE()
+
+    p = DE(pop_size)
     p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, maximize=True)
 
