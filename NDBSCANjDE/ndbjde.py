@@ -494,7 +494,7 @@ class DE:
                 if pop_size <= 200:
                     m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
                 else:
-                    m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
+                    m=math.floor(5+5*((max_iterations-iteration)/max_iterations))
                 avrFit = 0.00 
                 # #update_solutions
                 strategy = 0
@@ -506,7 +506,6 @@ class DE:
                 yplot = []
                 
                 self.update_jDE(pop_size)                
-
 
                 for ind in range(0,len(self.pop)):
 
@@ -541,10 +540,9 @@ class DE:
                             #dist_correta, aux = self.euclidean_distance2(candSol, crowding_target, dim)
                             #self.full_euclidean_aux[crowding_target] = dist_correta
                             #self.full_euclidean[crowding_target] = dist_correta
-                            fpop[crowding_target] = fcandSol
-                            
-                        self.mutation_rate[ind] = self.mutation_rate_T[ind]
-                        self.crossover_rate[ind] = self.crossover_rate_T[ind]
+                            fpop[crowding_target] = fcandSol                            
+                            self.mutation_rate[ind] = self.mutation_rate_T[ind]
+                            self.crossover_rate[ind] = self.crossover_rate_T[ind]
                     avrFit += fpop[crowding_target]
 
                 # idx = np.argpartition(fpop, 10)
@@ -582,29 +580,29 @@ class DE:
                 elapTime.append((time() - start)/60.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
-                # if iteration%100 == 0:
-                #     X = StandardScaler(with_mean=False).fit_transform(self.pop)
+                if iteration%20 == 0:
+                    X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-                #     db = DBSCAN(eps=0.5, min_samples=m).fit(X)
-                #     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-                #     core_samples_mask[db.core_sample_indices_] = True
-                #     labels = db.labels_
+                    db = DBSCAN(eps=0.1, min_samples=m).fit(X)
+                    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                    core_samples_mask[db.core_sample_indices_] = True
+                    labels = db.labels_
 
-                #     n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+                    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-                #     # k = pop_size - Counter(labels).most_common(1)[0][1]
-                #     # idx = np.argpartition(fpop, -k)
+                    # k = pop_size - Counter(labels).most_common(1)[0][1]
+                    # idx = np.argpartition(fpop, -k)
                     
-                #     # min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
-                #     # print([fpop[i] for i in idx[-k:] if fpop[i] < -accuracy])
-                #     # for i in idx[-k:]:
-                #     #     if fpop[i] < -accuracy:
-                #     #         print(i, fpop[i], self.pop[i])
+                    # min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
+                    # print([fpop[i] for i in idx[-k:] if fpop[i] < -accuracy])
+                    # for i in idx[-k:]:
+                    #     if fpop[i] < -accuracy:
+                    #         print(i, fpop[i], self.pop[i])
                     
                     
 
-                #     if n_clusters_ > 0:
-                #         self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
+                    if n_clusters_ > 0:
+                        self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
                     # else:
                     #     k = Counter(labels).most_common(1)[0][1]
                     #     qtd_inutil = k/n_clusters_
@@ -789,11 +787,11 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 9
+    nfunc = 7
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 1000
+    pop_size = 500
     accuracy = 0.001
     max_iterations = (f.get_maxfes() // pop_size) 
     #max_iterations = 1
