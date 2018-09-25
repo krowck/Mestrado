@@ -2,7 +2,7 @@
 import matplotlib
 from os import mkdir
 import math
-import numpy
+import numpy as np
 import copy
 import sobol_seq
 from statistics import median, stdev
@@ -21,6 +21,135 @@ from sklearn.preprocessing import StandardScaler
 
 import uuid
 #import cProfile
+
+def r8vec_print ( n, a, title ):
+  print ( '' )
+  print ( title )
+  print ( '' )
+  for i in range ( 0, n ):
+    print ( '%6d:  %12g' % ( i, a[i] ) )
+
+
+def best_nearby ( delta, point, prevbest, nvars, f, funevals ):
+
+  z = point.copy ( )
+  minf = prevbest
+  for i in range ( 0, nvars ):
+
+    z[i] = point[i] + delta[i]
+
+    ftmp = f.evaluate( z )
+
+    funevals = funevals + 1
+
+    if ( ftmp > minf ):
+      minf = ftmp
+
+    else:
+
+      delta[i] = - delta[i]
+      z[i] = point[i] + delta[i]
+      ftmp = f.evaluate( z )
+      funevals = funevals + 1
+
+      if ( ftmp > minf ):
+        minf = ftmp
+      else:
+        z[i] = point[i]
+
+  point = z.copy ( )
+  newbest = minf
+
+  return newbest, point, funevals
+
+def hooke (nvars, startpt, rho, eps, itermax, f):
+
+  verbose = False
+  newx = startpt.copy ( )
+  xbefore = startpt.copy ( )
+  
+  delta = np.zeros ( nvars )
+
+  for i in range ( 0, nvars ):
+    if ( startpt[i] == 0.0 ):
+      delta[i] = rho
+    else:
+      delta[i] = rho * abs ( startpt[i] )
+
+  funevals = 0
+  steplength = rho
+  iters = 0
+  fbefore = f.evaluate( newx )
+  funevals = funevals + 1
+  newf = fbefore
+
+  while ( iters < itermax and eps < steplength ):
+    iters = iters + 1
+
+    if ( verbose ):
+
+      print ( '' )
+      print ( '  FUNEVALS = %d, F(X) = %g' % ( funevals, fbefore ) )
+      for i in range ( 0, nvars ):
+        print ( '  %8d  %g' % ( i, xbefore[i] ) )
+#
+#  Find best new point, one coordinate at a time.
+#
+    for i in range ( 0, nvars ):
+      newx[i] = xbefore[i]
+
+    newf, newx, funevals = best_nearby ( delta, newx, fbefore, nvars, f, funevals )
+#
+#  If we made some improvements, pursue that direction.
+#
+    keep = True
+
+    while ( newf > fbefore and keep ):
+
+      for i in range ( 0, nvars ):
+#
+#  Arrange the sign of DELTA.
+#
+        if ( newx[i] >= xbefore[i] ):
+          delta[i] = - abs ( delta[i] )
+        else:
+          delta[i] = abs ( delta[i] )
+#
+#  Now, move further in this direction.
+#
+        tmp = xbefore[i]
+        xbefore[i] = newx[i]
+        newx[i] = newx[i] + newx[i] - tmp
+
+      fbefore = newf
+      newf, newx, funevals = best_nearby ( delta, newx, fbefore, nvars, f, \
+        funevals )
+#
+#  If the further (optimistic) move was bad...
+#
+      if ( fbefore >= newf ):
+        break
+#
+#  Make sure that the differences between the new and the old points
+#  are due to actual displacements; beware of roundoff errors that
+#  might cause NEWF < FBEFORE.
+#
+      keep = False
+
+      for i in range ( 0, nvars ):
+        if ( 0.5 * abs ( delta[i] ) < abs ( newx[i] - xbefore[i] ) ):
+          keep = True
+          break
+
+    if ( eps <= steplength and fbefore >= newf ):
+      steplength = steplength * rho
+      for i in range ( 0, nvars ):
+        delta[i] = delta[i] * rho
+  
+
+  endpt = xbefore.copy ( )
+
+  return iters, endpt
 
 
 class DE:
@@ -369,8 +498,7 @@ class DE:
             if rand4 < tau2:
                 self.crossover_rate_T[ind] = rand3
             else:
-                self.crossover_rate_T[ind] = self.crossover_rate[ind]
-        
+                self.crossover_rate_T[ind] = self.crossover_rate[ind]        
 
 
     def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, accuracy, maximize=True):
@@ -490,11 +618,12 @@ class DE:
 
             for iteration in range(max_iterations):
 
+
                 print(iteration)
                 if pop_size <= 200:
                     m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
                 else:
-                    m=math.floor(5+5*((max_iterations-iteration)/max_iterations))
+                    m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
                 avrFit = 0.00 
                 # #update_solutions
                 strategy = 0
@@ -580,37 +709,72 @@ class DE:
                 elapTime.append((time() - start)/60.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
-                if iteration%20 == 0:
-                    X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-                    db = DBSCAN(eps=0.1, min_samples=m).fit(X)
-                    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-                    core_samples_mask[db.core_sample_indices_] = True
-                    labels = db.labels_
 
-                    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-                    # k = pop_size - Counter(labels).most_common(1)[0][1]
-                    # idx = np.argpartition(fpop, -k)
+
+
+                # if iteration%20 == 0:
+                #     X = StandardScaler(with_mean=False).fit_transform(self.pop)
+
+                #     db = DBSCAN(eps=0.1, min_samples=m).fit(X)
+                #     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                #     core_samples_mask[db.core_sample_indices_] = True
+                #     labels = db.labels_
+
+                #     n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+
+                #     # k = pop_size - Counter(labels).most_common(1)[0][1]
+                #     # idx = np.argpartition(fpop, -k)
                     
-                    # min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
-                    # print([fpop[i] for i in idx[-k:] if fpop[i] < -accuracy])
-                    # for i in idx[-k:]:
-                    #     if fpop[i] < -accuracy:
-                    #         print(i, fpop[i], self.pop[i])
+                #     # min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
+                #     # print([fpop[i] for i in idx[-k:] if fpop[i] < -accuracy])
+                #     # for i in idx[-k:]:
+                #     #     if fpop[i] < -accuracy:
+                #     #         print(i, fpop[i], self.pop[i])
                     
                     
 
-                    if n_clusters_ > 0:
-                        self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
-                    # else:
-                    #     k = Counter(labels).most_common(1)[0][1]
-                    #     qtd_inutil = k/n_clusters_
-                    #     self.generate_individual_neighborhood()
+                #     if n_clusters_ > 0:
+                #         self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
+                #     # else:
+                #     #     k = Counter(labels).most_common(1)[0][1]
+                #     #     qtd_inutil = k/n_clusters_
+                #     #     self.generate_individual_neighborhood()
 
 
                     # print(Counter(labels))
                     # print(Counter(labels).most_common(1)[0][1])
+            itermax = int(f.get_maxfes()*0.3/len(self.pop))
+            rho = 0.9
+            eps = 1.0E-25
+            print(itermax)
+
+            print(self.pop)
+
+            for ind in range(0, len(self.pop)):
+                #r8vec_print ( dim, self.pop[ind], '  Initial estimate for X:' )
+                #print ( '' )
+                #print ( '  F(X*) = %lf' % ( f.evaluate(self.pop[ind]) ) )
+
+                it, endpt = hooke(dim, self.pop[ind], rho, eps, itermax, f)
+                self.pop[ind] = endpt
+                #r8vec_print ( dim, endpt, '  Final estimate for X:' )
+                #print ( '' )
+                #print ( '  F(X*) = %lf' % ( f.evaluate(endpt) ) )          
+                #print("iteracoes >>>", it)  
+
+
+            ######### TESTE INDIVIDUAL #############
+            #[-0.49962981780933857, -4.012538978304359]
+            #[-2.1876836947475446, 1.6906980461171564]
+            # self.pop[2] = [-0.49969506538256958, -4.0125970848019490]
+            # self.pop[3] = [-2.1849843511337519, 1.6870539388189698]
+            # it, endpt = hooke(dim, [-2.187683694747, 1.69069804611], rho, eps, 500, f)
+            # print(it)
+            # r8vec_print ( dim, endpt, '  Final estimate for X:' )
+            # print ( '' )
+            # print ( '  F(X*) = %lf' % ( f.evaluate(endpt) ) )     
             
             if dim >= 2:
                 X = StandardScaler(with_mean=False).fit_transform(self.pop)
@@ -719,7 +883,8 @@ class DE:
             # self.pop[9] = [-1.9351333343067720, 3.3777433989028154]
 
 
-            self.printPopulation(fpop)
+            print(self.pop)
+            #self.printPopulation(fpop)
             #print(self.pop)
 
             count, seeds = how_many_goptima(self.pop, f, accuracy, len(self.pop), pop_aux)
@@ -787,13 +952,13 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 7
+    nfunc = 13 
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 500
+    pop_size = 150
     accuracy = 0.001
-    max_iterations = (f.get_maxfes() // pop_size) 
+    max_iterations = int((f.get_maxfes() // pop_size)*0.7)
     #max_iterations = 1
     #m = 10
     runs = 1
