@@ -37,6 +37,10 @@ def best_nearby ( delta, point, prevbest, nvars, f, funevals ):
   for i in range ( 0, nvars ):
 
     z[i] = point[i] + delta[i]
+    if(z[i] > f.get_ubound(i)):
+      z[i] = f.get_ubound(i)
+    elif(z[i] < f.get_lbound(i)):
+      z[i] = f.get_lbound(i)
 
     ftmp = f.evaluate( z )
 
@@ -49,8 +53,14 @@ def best_nearby ( delta, point, prevbest, nvars, f, funevals ):
 
       delta[i] = - delta[i]
       z[i] = point[i] + delta[i]
+      if(z[i] > f.get_ubound(i)):
+        z[i] = f.get_ubound(i)
+      elif(z[i] < f.get_lbound(i)):
+        z[i] = f.get_lbound(i)
+
       ftmp = f.evaluate( z )
       funevals = funevals + 1
+
 
       if ( ftmp > minf ):
         minf = ftmp
@@ -120,6 +130,10 @@ def hooke (nvars, startpt, rho, eps, itermax, f):
         tmp = xbefore[i]
         xbefore[i] = newx[i]
         newx[i] = newx[i] + newx[i] - tmp
+        if newx[i] < f.get_lbound(i):
+            newx[i] = f.get_lbound(i)
+        elif newx[i] > f.get_ubound(i):
+            newx[i] = f.get_ubound(i)
 
       fbefore = newf
       newf, newx, funevals = best_nearby ( delta, newx, fbefore, nvars, f, \
@@ -631,16 +645,16 @@ class DE:
                 #print(crossover_rate)
                 #sleep(5)
 
-                xplot = []
-                yplot = []
+                # xplot = []
+                # yplot = []
                 
                 self.update_jDE(pop_size)                
 
                 for ind in range(0,len(self.pop)):
 
-                    if dim == 2:
-                        xplot.append(self.pop[ind][0])
-                        yplot.append(self.pop[ind][1])
+                    # if dim == 2:
+                    #     xplot.append(self.pop[ind][0])
+                    #     yplot.append(self.pop[ind][1])
                     
                     #crossover_rate[ind] = 0.1
                     myCR = self.crossover_rate_T[ind]
@@ -687,16 +701,16 @@ class DE:
                     self.full_euclidean[control][control] = math.inf
                 #self.full_euclidean = self.full_euclidean_aux
 
-                if dim ==2 :
-                    plt.xlim(lb, ub)
-                    plt.ylim(lb, ub)
+                # if dim == 2:
+                #     plt.xlim(lb, ub)
+                #     plt.ylim(lb, ub)
 
-                    plt.draw()
+                #     plt.draw()
                 
                     
-                    sc.set_offsets(np.c_[xplot,yplot])
-                    fig.canvas.draw_idle()
-                    plt.pause(0.0001)
+                #     sc.set_offsets(np.c_[xplot,yplot])
+                #     fig.canvas.draw_idle()
+                #     plt.pause(0.0001)
 
                 #plt.waitforbuttonpress()
 
@@ -747,7 +761,7 @@ class DE:
                     # print(Counter(labels).most_common(1)[0][1])
             itermax = int(f.get_maxfes()*0.3/len(self.pop))
             rho = 0.9
-            eps = 1.0E-25
+            eps = 1.0E-50
             print(itermax)
 
             print(self.pop)
@@ -770,11 +784,11 @@ class DE:
             #[-2.1876836947475446, 1.6906980461171564]
             # self.pop[2] = [-0.49969506538256958, -4.0125970848019490]
             # self.pop[3] = [-2.1849843511337519, 1.6870539388189698]
-            # it, endpt = hooke(dim, [-2.187683694747, 1.69069804611], rho, eps, 500, f)
+            # it, endpt = hooke(dim, [-0.49969540920104254, -4.0125977765816], rho, eps, 10000, f)
             # print(it)
             # r8vec_print ( dim, endpt, '  Final estimate for X:' )
             # print ( '' )
-            # print ( '  F(X*) = %lf' % ( f.evaluate(endpt) ) )     
+            # print ( '  F(X*) = %.10lf' % ( f.evaluate(endpt) ) )     
             
             if dim >= 2:
                 X = StandardScaler(with_mean=False).fit_transform(self.pop)
@@ -952,11 +966,11 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 13 
+    nfunc = 15
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 150
+    pop_size = 200
     accuracy = 0.001
     max_iterations = int((f.get_maxfes() // pop_size)*0.7)
     #max_iterations = 1
