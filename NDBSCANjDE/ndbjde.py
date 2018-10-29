@@ -630,8 +630,9 @@ class DE:
                 fig, ax = plt.subplots()
                 sc = ax.scatter(xplot,yplot, s=2)
 
-            for iteration in range(max_iterations):
+            avrFit_aux = 0.0
 
+            for iteration in range(max_iterations):
 
                 print(iteration)
                 if pop_size <= 200:
@@ -722,11 +723,6 @@ class DE:
                 self.fbest_list.append(fbest)
                 elapTime.append((time() - start)/60.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
-
-
-
-
-
 
                 # if iteration%20 == 0:
                 #     X = StandardScaler(with_mean=False).fit_transform(self.pop)
