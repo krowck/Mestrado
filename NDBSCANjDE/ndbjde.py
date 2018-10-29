@@ -629,17 +629,21 @@ class DE:
                 yplot = []
                 fig, ax = plt.subplots()
                 sc = ax.scatter(xplot,yplot, s=2)
-
-            avrFit_aux = 0.0
+            avrFit = 9999999
 
             for iteration in range(max_iterations):
+
+                if (f.get_fitness_goptima() - avrFit < accuracy):
+                    print("fitness medio menor que acuracia %f %f", avrFit, f.get_fitness_goptima() )
 
                 print(iteration)
                 if pop_size <= 200:
                     m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
                 else:
                     m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
-                avrFit = 0.00 
+
+                avrFit = 0.00
+                 
                 # #update_solutions
                 strategy = 0
                 #print(mutation_rate)
@@ -724,55 +728,98 @@ class DE:
                 elapTime.append((time() - start)/60.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
-                # if iteration%20 == 0:
+                # if iteration%200 == 0:
                 #     X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-                #     db = DBSCAN(eps=0.1, min_samples=m).fit(X)
+                #     db = DBSCAN(eps=0.01, min_samples=1).fit(X)
                 #     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
                 #     core_samples_mask[db.core_sample_indices_] = True
                 #     labels = db.labels_
 
                 #     n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-                #     # k = pop_size - Counter(labels).most_common(1)[0][1]
-                #     # idx = np.argpartition(fpop, -k)
-                    
-                #     # min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
-                #     # print([fpop[i] for i in idx[-k:] if fpop[i] < -accuracy])
-                #     # for i in idx[-k:]:
-                #     #     if fpop[i] < -accuracy:
-                #     #         print(i, fpop[i], self.pop[i])
-                    
-                    
+                #     temp = [0] * n_clusters_
+                #     best_individuals = [0] * n_clusters_
 
-                #     if n_clusters_ > 0:
-                #         self.reset_pop(labels, Counter(labels), n_clusters_, m, dim, f)
-                #     # else:
-                #     #     k = Counter(labels).most_common(1)[0][1]
-                #     #     qtd_inutil = k/n_clusters_
-                #     #     self.generate_individual_neighborhood()
+                #     k = pop_size - Counter(labels).most_common(1)[0][1]
+                #     idx = np.argpartition(fpop, -k)
 
+                #     print(k, idx)
+                #     min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
+                #     print(labels)
 
+                #     for j in range(n_clusters_):
+                #         temp[j] = [i for i,x in enumerate(labels) if x==j]
+
+                #     print(temp)
+
+                #     for i in range(n_clusters_):
+                #         temp_best = -999999
+                #         indice_best = -1
+                #         for x in temp[i]:
+                #             if fpop[x] > temp_best:
+                #                 temp_best = fpop[x]
+                #                 indice_best = x
+                #             best_individuals[i] = indice_best
+                    # [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
+                    # for i in idx[-k:]:
+                    #     if fpop[i] < -accuracy:
+                    #         print(i, fpop[i], self.pop[i])
                     # print(Counter(labels))
                     # print(Counter(labels).most_common(1)[0][1])
-            itermax = int((f.get_maxfes()*0.3/len(self.pop))/dim)
+                    # sleep(2)
+
+            X = StandardScaler(with_mean=False).fit_transform(self.pop)
+
+            db = DBSCAN(eps=0.1, min_samples=1).fit(X)
+            core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+            core_samples_mask[db.core_sample_indices_] = True
+            labels = db.labels_
+
+            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+
+            temp = [0] * n_clusters_
+            best_individuals = [0] * n_clusters_
+
+            k = pop_size - Counter(labels).most_common(1)[0][1]
+            idx = np.argpartition(fpop, -k)
+
+            print(k, idx)
+            min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
+            print(labels)
+
+            for j in range(n_clusters_):
+                temp[j] = [i for i,x in enumerate(labels) if x==j]
+
+            print(temp)
+
+            for i in range(n_clusters_):
+                temp_best = -999999
+                indice_best = -1
+                for x in temp[i]:
+                    if fpop[x] > temp_best:
+                        temp_best = fpop[x]
+                        indice_best = x
+                    best_individuals[i] = indice_best
+
+            itermax = int((f.get_maxfes()*0.3/len(best_individuals))/dim)
             rho = 0.9
             eps = 1.0E-50
             print(itermax)
 
-            print(self.pop)
+            print(best_individuals, len(best_individuals))
 
-            for ind in range(0, len(self.pop)):
-                #r8vec_print ( dim, self.pop[ind], '  Initial estimate for X:' )
-                #print ( '' )
-                #print ( '  F(X*) = %lf' % ( f.evaluate(self.pop[ind]) ) )
+            for ind in range(0, len(best_individuals)):
+                # r8vec_print ( dim, self.pop[ind], '  Initial estimate for X:' )
+                # print ( '' )
+                # print ( '  F(X*) = %lf' % ( f.evaluate(self.pop[ind]) ) )
 
                 it, endpt = hooke(dim, self.pop[ind], rho, eps, itermax, f)
                 self.pop[ind] = endpt
-                #r8vec_print ( dim, endpt, '  Final estimate for X:' )
-                #print ( '' )
-                #print ( '  F(X*) = %lf' % ( f.evaluate(endpt) ) )          
-                #print("iteracoes >>>", it)  
+                # r8vec_print ( dim, endpt, '  Final estimate for X:' )
+                # print ( '' )
+                # print ( '  F(X*) = %lf' % ( f.evaluate(endpt) ) )          
+                # print("iteracoes >>>", it)  
 
 
             ######### TESTE INDIVIDUAL #############
@@ -962,7 +1009,7 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 12
+    nfunc = 13
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
