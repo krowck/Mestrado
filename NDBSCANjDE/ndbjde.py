@@ -248,7 +248,7 @@ class DE:
         for i in range(pop_size):
         	lp = []
         	for d in range(dim):
-        		print(vec[i][d])
+        		#print(vec[i][d])
         		lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
         	self.pop.append(lp)
 
@@ -278,6 +278,12 @@ class DE:
         lp = []
         for d in range(dim):
             lp.append(uniform(lb[d],ub[d]))
+        self.pop[alvo] = lp
+
+    def generateNormalIndividual(self, best, dim, alvo):
+        lp = []
+        for d in range(dim):
+            lp.append(np.random.normal(best[d], 0.05))
         self.pop[alvo] = lp
 
     def evaluatePopulation(self, func, f):
@@ -483,6 +489,24 @@ class DE:
                 #self.full_euclidean[x] = dist
         self.euclidean_distance_full2(dim)
 
+    def normalize_pop_around_peaks(self, best_individuals, nclusters, popsize, dim, individuals_toReplace):
+        k = 0
+
+        individuals_per_peak = int(len(individuals_toReplace)/nclusters)
+        #print("pop antes: ", self.pop)
+        for i in best_individuals:
+            for j in range(0, individuals_per_peak):
+                self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[j + k])
+            k = k + individuals_per_peak
+        for i in best_individuals:
+            if k >= len(individuals_toReplace):
+                break
+            self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[k])
+            k = k + 1
+            
+        #print("pop depois: ", self.pop)
+        #sleep(5)
+
     def generate_individual_neighborhood(self, labels):
         aux = []
         indices = []
@@ -544,9 +568,11 @@ class DE:
         ub = f.get_ubound(0)
         lb = f.get_lbound(0)
         min_value_vector = []
+
         
         #runs
         for r in range(runs):
+            list_aux = [0] * pop_size
             count_global = 0.0
             elapTime = []
             start = time()
@@ -631,16 +657,19 @@ class DE:
                 sc = ax.scatter(xplot,yplot, s=2)
             avrFit = 9999999
 
+            for i in range(0, pop_size):
+                list_aux[i] = i
+
             for iteration in range(max_iterations):
 
-                if (f.get_fitness_goptima() - avrFit < accuracy):
-                    print("fitness medio menor que acuracia %f %f", avrFit, f.get_fitness_goptima() )
+                #if (f.get_fitness_goptima() - avrFit < accuracy):
+                #    print("fitness medio menor que acuracia %f %f", avrFit, f.get_fitness_goptima() )
 
                 print(iteration)
                 if pop_size <= 200:
-                    m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
+                    m=math.floor(3+10*((max_iterations-iteration)/max_iterations))
                 else:
-                    m=math.floor(5+20*((max_iterations-iteration)/max_iterations))
+                    m=math.floor(3+10*((max_iterations-iteration)/max_iterations))
 
                 avrFit = 0.00
                  
@@ -728,39 +757,58 @@ class DE:
                 elapTime.append((time() - start)/60.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
-                # if iteration%200 == 0:
-                #     X = StandardScaler(with_mean=False).fit_transform(self.pop)
+                if iteration%200 == 0 and iteration != 0 or iteration == max_iterations:
+                    individuals_toReplace = []
+                    X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-                #     db = DBSCAN(eps=0.01, min_samples=1).fit(X)
-                #     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-                #     core_samples_mask[db.core_sample_indices_] = True
-                #     labels = db.labels_
+                    db = DBSCAN(eps=0.2, min_samples=1).fit(X)
+                    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                    core_samples_mask[db.core_sample_indices_] = True
+                    labels = db.labels_
 
-                #     n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+                    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-                #     temp = [0] * n_clusters_
-                #     best_individuals = [0] * n_clusters_
+                    temp = [0] * n_clusters_
+                    best_individuals = [0] * n_clusters_
 
-                #     k = pop_size - Counter(labels).most_common(1)[0][1]
-                #     idx = np.argpartition(fpop, -k)
+                    k = pop_size - Counter(labels).most_common(1)[0][1]
+                    idx = np.argpartition(fpop, -k)
 
-                #     print(k, idx)
-                #     min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
-                #     print(labels)
+                    #print(k, idx)
+                    min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
+                    #print(labels)
 
-                #     for j in range(n_clusters_):
-                #         temp[j] = [i for i,x in enumerate(labels) if x==j]
+                    for j in range(n_clusters_):
+                        temp[j] = [i for i,x in enumerate(labels) if x==j]
 
-                #     print(temp)
+                    #print(temp)
 
-                #     for i in range(n_clusters_):
-                #         temp_best = -999999
-                #         indice_best = -1
-                #         for x in temp[i]:
-                #             if fpop[x] > temp_best:
-                #                 temp_best = fpop[x]
-                #                 indice_best = x
-                #             best_individuals[i] = indice_best
+                    for i in range(n_clusters_):
+                        temp_best = -999999
+                        indice_best = -1
+                        for x in temp[i]:
+                            if fpop[x] > temp_best:
+                                temp_best = fpop[x]
+                                indice_best = x
+                            best_individuals[i] = indice_best
+                    
+                    individuals_toReplace = list(set(list_aux) - set(best_individuals))
+
+                    self.normalize_pop_around_peaks(best_individuals, n_clusters_, pop_size, dim, individuals_toReplace)
+
+                    self.euclidean_distance_full2(dim)
+                    self.full_euclidean = self.full_euclidean.pop()
+                    for control in range(pop_size):
+                        self.full_euclidean[control][control] = math.inf
+
+                    # for i in range(n_clusters_):
+                    #     temp_best = -999999
+                    #     indice_best = -1
+                    #     for x in temp[i]:
+                    #         if fpop[x] > temp_best:
+                    #             temp_best = fpop[x]
+                    #             indice_best = x
+                    #         best_individuals[i] = indice_best
                     # [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
                     # for i in idx[-k:]:
                     #     if fpop[i] < -accuracy:
@@ -805,15 +853,16 @@ class DE:
             itermax = int((f.get_maxfes()*0.3/len(best_individuals))/dim)
             rho = 0.9
             eps = 1.0E-50
+
             print(itermax)
 
             print(best_individuals, len(best_individuals))
 
-            for ind in range(0, len(best_individuals)):
+            for ind in best_individuals:
                 # r8vec_print ( dim, self.pop[ind], '  Initial estimate for X:' )
                 # print ( '' )
                 # print ( '  F(X*) = %lf' % ( f.evaluate(self.pop[ind]) ) )
-
+                print(ind)
                 it, endpt = hooke(dim, self.pop[ind], rho, eps, itermax, f)
                 self.pop[ind] = endpt
                 # r8vec_print ( dim, endpt, '  Final estimate for X:' )
@@ -1009,16 +1058,16 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 13
+    nfunc = 15
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 150
+    pop_size = 250
     accuracy = 0.001
     max_iterations = int((f.get_maxfes() // pop_size)*0.7)
     #max_iterations = 1
     #m = 10
-    runs = 1
+    runs = 10
 
     p = DE(pop_size)
     p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, maximize=True)
