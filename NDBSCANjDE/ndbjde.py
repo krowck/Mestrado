@@ -1058,7 +1058,7 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 15
+    nfunc = 19
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
@@ -1067,7 +1067,7 @@ if __name__ == '__main__':
     max_iterations = int((f.get_maxfes() // pop_size)*0.7)
     #max_iterations = 1
     #m = 10
-    runs = 10
+    runs = 3
 
     p = DE(pop_size)
     p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, maximize=True)
