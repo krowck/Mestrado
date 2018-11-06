@@ -539,7 +539,7 @@ class DE:
                 self.crossover_rate_T[ind] = self.crossover_rate[ind]        
 
 
-    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, accuracy, maximize=True):
+    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, accuracy, flag_plot, maximize=True):
 
         crowding_target = 0
         neighborhood_list = []
@@ -597,7 +597,7 @@ class DE:
             
             # X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-            # db = DBSCAN(eps=0.01, min_samples=5).fit(X)
+            # db = DBSCAN(eps=0.01, min_samples=1).fit(X)
             # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
             # core_samples_mask[db.core_sample_indices_] = True
             # labels = db.labels_
@@ -628,7 +628,7 @@ class DE:
             # plt.title('Estimated number of clusters: %d' % n_clusters_)
 
 
-            #plt.show()
+            # plt.show()
 
             #for ind in range(pop_size):                
             #print(self.full_euclidean)
@@ -649,7 +649,7 @@ class DE:
             # generates crossover rate values
             cr_list = []
 
-            if dim == 2:
+            if dim == 2 and flag_plot == 1:
                 plt.ion()
                 xplot = []
                 yplot = []
@@ -662,6 +662,7 @@ class DE:
 
             for iteration in range(max_iterations):
 
+
                 #if (f.get_fitness_goptima() - avrFit < accuracy):
                 #    print("fitness medio menor que acuracia %f %f", avrFit, f.get_fitness_goptima() )
 
@@ -670,6 +671,7 @@ class DE:
                     m=math.floor(3+10*((max_iterations-iteration)/max_iterations))
                 else:
                     m=math.floor(3+10*((max_iterations-iteration)/max_iterations))
+                m = 4
 
                 avrFit = 0.00
                  
@@ -679,16 +681,17 @@ class DE:
                 #print(crossover_rate)
                 #sleep(5)
 
-                # xplot = []
-                # yplot = []
+                if flag_plot == 1:
+                    xplot = []
+                    yplot = []
                 
                 self.update_jDE(pop_size)                
 
                 for ind in range(0,len(self.pop)):
 
-                    # if dim == 2:
-                    #     xplot.append(self.pop[ind][0])
-                    #     yplot.append(self.pop[ind][1])
+                    if dim == 2 and flag_plot == 1:
+                        xplot.append(self.pop[ind][0])
+                        yplot.append(self.pop[ind][1])
                     
                     #crossover_rate[ind] = 0.1
                     myCR = self.crossover_rate_T[ind]
@@ -735,16 +738,16 @@ class DE:
                     self.full_euclidean[control][control] = math.inf
                 #self.full_euclidean = self.full_euclidean_aux
 
-                # if dim == 2:
-                #     plt.xlim(lb, ub)
-                #     plt.ylim(lb, ub)
+                if dim == 2 and flag_plot == 1:
+                    plt.xlim(lb, ub)
+                    plt.ylim(lb, ub)
 
-                #     plt.draw()
+                    plt.draw()
                 
                     
-                #     sc.set_offsets(np.c_[xplot,yplot])
-                #     fig.canvas.draw_idle()
-                #     plt.pause(0.0001)
+                    sc.set_offsets(np.c_[xplot,yplot])
+                    fig.canvas.draw_idle()
+                    plt.pause(0.0001)
 
                 #plt.waitforbuttonpress()
 
@@ -757,11 +760,48 @@ class DE:
                 elapTime.append((time() - start)/60.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
-                if iteration%200 == 0 and iteration != 0 or iteration == max_iterations:
-                    individuals_toReplace = []
-                    X = StandardScaler(with_mean=False).fit_transform(self.pop)
+                if iteration%150 == 0 and iteration != 0 or iteration == max_iterations:
 
-                    db = DBSCAN(eps=0.2, min_samples=1).fit(X)
+                    # X = StandardScaler(with_mean=False).fit_transform(self.pop)
+
+                    # db = DBSCAN(eps=0.2, min_samples=1).fit(X)
+                    # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                    # core_samples_mask[db.core_sample_indices_] = True
+                    # labels = db.labels_
+
+                    # # Number of clusters in labels, ignoring noise if present.
+                    # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+
+                    # print('Estimated number of clusters: %d' % n_clusters_)
+
+                    # unique_labels = set(labels)
+                    # colors = [plt.cm.Spectral(each)
+                    #           for each in np.linspace(0, 1, len(unique_labels))]
+                    # for k, col in zip(unique_labels, colors):
+                    #     if k == -1:
+                    #         # Black used for noise.
+                    #         col = [0, 0, 0, 1]
+
+                    #     class_member_mask = (labels == k)
+
+                    #     xy = X[class_member_mask & core_samples_mask]
+                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                    #              markeredgecolor='k', markersize=14)
+
+                    #     xy = X[class_member_mask & ~core_samples_mask]
+                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                    #              markeredgecolor='k', markersize=6)
+
+                    # plt.title('Estimated number of clusters: %d' % n_clusters_)
+                    #plt.show()
+                    #plt.pause(5)
+                    #plt.close()
+
+
+                    individuals_toReplace = []
+                    Y = StandardScaler(with_mean=False).fit_transform(self.pop)
+
+                    db = DBSCAN(eps=0.2, min_samples=1).fit(Y)
                     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
                     core_samples_mask[db.core_sample_indices_] = True
                     labels = db.labels_
@@ -783,6 +823,7 @@ class DE:
 
                     #print(temp)
 
+
                     for i in range(n_clusters_):
                         temp_best = -999999
                         indice_best = -1
@@ -796,10 +837,49 @@ class DE:
 
                     self.normalize_pop_around_peaks(best_individuals, n_clusters_, pop_size, dim, individuals_toReplace)
 
+                    self.pop_aux2 = self.pop
+
                     self.euclidean_distance_full2(dim)
                     self.full_euclidean = self.full_euclidean.pop()
                     for control in range(pop_size):
                         self.full_euclidean[control][control] = math.inf
+
+                    # Z = StandardScaler(with_mean=False).fit_transform(self.pop)
+
+                    # db = DBSCAN(eps=0.2, min_samples=1).fit(Z)
+                    # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                    # core_samples_mask[db.core_sample_indices_] = True
+                    # labels = db.labels_
+
+                    # # Number of clusters in labels, ignoring noise if present.
+                    # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+
+                    # print('Estimated number of clusters: %d' % n_clusters_)
+
+                    # unique_labels = set(labels)
+                    # colors = [plt.cm.Spectral(each)
+                    #           for each in np.linspace(0, 1, len(unique_labels))]
+                    # for k, col in zip(unique_labels, colors):
+                    #     if k == -1:
+                    #         # Black used for noise.
+                    #         col = [0, 0, 0, 1]
+
+                    #     class_member_mask = (labels == k)
+
+                    #     xy = Z[class_member_mask & core_samples_mask]
+                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                    #              markeredgecolor='k', markersize=14)
+
+                    #     xy = Z[class_member_mask & ~core_samples_mask]
+                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                    #              markeredgecolor='k', markersize=6)
+
+                    # plt.title('Estimated number of clusters: %d' % n_clusters_)
+
+
+                    #plt.show()
+                    #lt.pause(5)
+                    #plt.close()
 
                     # for i in range(n_clusters_):
                     #     temp_best = -999999
@@ -816,6 +896,7 @@ class DE:
                     # print(Counter(labels))
                     # print(Counter(labels).most_common(1)[0][1])
                     # sleep(2)
+
 
             X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
@@ -1058,17 +1139,18 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 19
+    nfunc = 13
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 250
+    pop_size = 150
     accuracy = 0.001
     max_iterations = int((f.get_maxfes() // pop_size)*0.7)
     #max_iterations = 1
     #m = 10
-    runs = 3
+    runs = 5
+    flag_plot = 0
 
     p = DE(pop_size)
-    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, maximize=True)
+    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, flag_plot, maximize=True)
 
