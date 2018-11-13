@@ -175,6 +175,7 @@ class DE:
         self.m_nmdf = 0.00 #diversity variable
         self.diversity = []
         self.fbest_list = []
+        self.nclusters_list = []
         self.full_euclidean = []   
         self.full_euclidean_aux = []
         self.crossover_rate = [gauss(0.5, 0.1) for i in range(pop_size)]
@@ -182,10 +183,13 @@ class DE:
         self.crossover_rate_T = [gauss(0.5, 0.1) for i in range(pop_size)]
         self.mutation_rate_T = [0.5] * pop_size
 
-    def generateGraphs(self, fbest_list, diversity_list, max_iterations, uid, run, dim, hora):
+    def generateGraphs(self, fbest_list, diversity_list, max_iterations, uid, run, dim, hora, nclusters_list):
         plt.plot(range(0, max_iterations), fbest_list, 'r--')
         plt.savefig(str(uid) + '_' + str(dim) + 'D_' + str(hora) + '/graphs/run' + str(run) + '_' + 'convergence.png')
-        plt.clf()                                                   
+        plt.clf()     
+        plt.plot(range(0, max_iterations), nclusters_list, 'r--')
+        plt.savefig(str(uid) + '_' + str(dim) + 'D_' + str(hora) + '/graphs/run' + str(run) + '_' + ' clusters.png')
+        plt.clf()                                                
         plt.plot(range(0, max_iterations), diversity_list, 'b--')
         #plt.ylim(ymin=0)
         plt.savefig(str(uid) + '_' + str(dim) + 'D_' + str(hora) + '/graphs/run' + str(run) + '_' + 'diversity.png')
@@ -193,7 +197,8 @@ class DE:
         plt.plot(range(0, max_iterations), diversity_list, 'b--')
         plt.ylim(ymin=0)
         plt.savefig(str(uid) + '_' + str(dim) + 'D_'  + str(hora) + '/graphs/run' + str(run) + '_' + 'diversity_normalizado.png')
-        plt.clf()                                                 
+        plt.clf()
+                                                       
         
     def updateDiversity(self):
         diversity = 0
@@ -575,6 +580,7 @@ class DE:
         records.write('=================================================================================================================\n')
         avr_fbest_r = []
         avr_diversity_r = []
+        avr_nclusters_r = []
         fbest_r = []
         best_r = []
         elapTime_r = []
@@ -620,7 +626,7 @@ class DE:
             # # Number of clusters in labels, ignoring noise if present.
             # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-            # print('Estimated number of clusters: %d' % n_clusters_)
+            #print('Estimated number of clusters: %d' % n_clusters_)
 
             # unique_labels = set(labels)
             # colors = [plt.cm.Spectral(each)
@@ -675,6 +681,7 @@ class DE:
             for i in range(0, pop_size):
                 list_aux[i] = i
 
+            print(max_iterations)
             for iteration in range(max_iterations):
 
 
@@ -775,43 +782,7 @@ class DE:
                 elapTime.append((time() - start)/60.0)
                 records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
-                if iteration%150 == 0 and iteration != 0 or iteration == max_iterations:
-
-                    # X = StandardScaler(with_mean=False).fit_transform(self.pop)
-
-                    # db = DBSCAN(eps=0.2, min_samples=1).fit(X)
-                    # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-                    # core_samples_mask[db.core_sample_indices_] = True
-                    # labels = db.labels_
-
-                    # # Number of clusters in labels, ignoring noise if present.
-                    # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
-
-                    # print('Estimated number of clusters: %d' % n_clusters_)
-
-                    # unique_labels = set(labels)
-                    # colors = [plt.cm.Spectral(each)
-                    #           for each in np.linspace(0, 1, len(unique_labels))]
-                    # for k, col in zip(unique_labels, colors):
-                    #     if k == -1:
-                    #         # Black used for noise.
-                    #         col = [0, 0, 0, 1]
-
-                    #     class_member_mask = (labels == k)
-
-                    #     xy = X[class_member_mask & core_samples_mask]
-                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                    #              markeredgecolor='k', markersize=14)
-
-                    #     xy = X[class_member_mask & ~core_samples_mask]
-                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                    #              markeredgecolor='k', markersize=6)
-
-                    # plt.title('Estimated number of clusters: %d' % n_clusters_)
-                    #plt.show()
-                    #plt.pause(5)
-                    #plt.close()
-
+                if iteration%150 == 0 and iteration != 0 or iteration == max_iterations-1:
 
                     individuals_toReplace = []
                     Y = StandardScaler(with_mean=False).fit_transform(self.pop)
@@ -860,60 +831,19 @@ class DE:
                         self.full_euclidean[control][control] = math.inf
 
                     clusters.write('%i  Clusters: %lf \n' % (iteration, n_clusters_))
-                    #records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
-                    # Z = StandardScaler(with_mean=False).fit_transform(self.pop)
+                #print(sorted(self.pop) == sorted(self.pop_aux2))
+                X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-                    # db = DBSCAN(eps=0.2, min_samples=1).fit(Z)
-                    # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-                    # core_samples_mask[db.core_sample_indices_] = True
-                    # labels = db.labels_
+                db = DBSCAN(eps=0.9, min_samples=1).fit(X)
+                core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                core_samples_mask[db.core_sample_indices_] = True
+                labels = db.labels_
 
-                    # # Number of clusters in labels, ignoring noise if present.
-                    # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+                # Number of clusters in labels, ignoring noise if present.
+                n_clusters_2 = len(set(labels)) - (1 if -1 in labels else 0)
 
-                    # print('Estimated number of clusters: %d' % n_clusters_)
-
-                    # unique_labels = set(labels)
-                    # colors = [plt.cm.Spectral(each)
-                    #           for each in np.linspace(0, 1, len(unique_labels))]
-                    # for k, col in zip(unique_labels, colors):
-                    #     if k == -1:
-                    #         # Black used for noise.
-                    #         col = [0, 0, 0, 1]
-
-                    #     class_member_mask = (labels == k)
-
-                    #     xy = Z[class_member_mask & core_samples_mask]
-                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                    #              markeredgecolor='k', markersize=14)
-
-                    #     xy = Z[class_member_mask & ~core_samples_mask]
-                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                    #              markeredgecolor='k', markersize=6)
-
-                    # plt.title('Estimated number of clusters: %d' % n_clusters_)
-
-
-                    #plt.show()
-                    #lt.pause(5)
-                    #plt.close()
-
-                    # for i in range(n_clusters_):
-                    #     temp_best = -999999
-                    #     indice_best = -1
-                    #     for x in temp[i]:
-                    #         if fpop[x] > temp_best:
-                    #             temp_best = fpop[x]
-                    #             indice_best = x
-                    #         best_individuals[i] = indice_best
-                    # [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
-                    # for i in idx[-k:]:
-                    #     if fpop[i] < -accuracy:
-                    #         print(i, fpop[i], self.pop[i])
-                    # print(Counter(labels))
-                    # print(Counter(labels).most_common(1)[0][1])
-                    # sleep(2)
+                self.nclusters_list.append(n_clusters_2)
 
 
             X = StandardScaler(with_mean=False).fit_transform(self.pop)
@@ -1020,9 +950,10 @@ class DE:
             fbest_r.append(fbest)
             best_r.append(best)
             elapTime_r.append(elapTime[max_iterations-1])
-            self.generateGraphs(self.fbest_list, self.diversity, max_iterations, funcs[nfunc], r, dim, hora)
+            self.generateGraphs(self.fbest_list, self.diversity, max_iterations, funcs[nfunc], r, dim, hora, self.nclusters_list)
             avr_fbest_r.append(self.fbest_list)
             avr_diversity_r.append(self.diversity)
+            avr_nclusters_r.append(self.nclusters_list)
 
             pop_aux = []
             pop_aux = self.pop
@@ -1104,6 +1035,7 @@ class DE:
             self.m_nmdf = 0.00 
             self.diversity = []
             self.fbest_list = []
+            self.nclusters_list = []
 
             print("ENTROu")
             PR.append(count_global/f.get_no_goptima())
@@ -1114,7 +1046,8 @@ class DE:
         
         fbestAux = [sum(x)/len(x) for x in zip(*avr_fbest_r)]
         diversityAux = [sum(x)/len(x) for x in zip(*avr_diversity_r)]
-        self.generateGraphs(fbestAux, diversityAux, max_iterations, funcs[nfunc], 'Overall', dim, hora)
+        nclustersAux = [sum(x)/len(x) for x in zip(*avr_nclusters_r)]
+        self.generateGraphs(fbestAux, diversityAux, max_iterations, funcs[nfunc], 'Overall', dim, hora, nclustersAux)
         records.write('=================================================================================================================')
         if maximize==False:
             results.write('Gbest Overall: %.4f\n' % (min(fbest_r)))
@@ -1158,7 +1091,7 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 15
+    nfunc = 12
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
@@ -1168,7 +1101,7 @@ if __name__ == '__main__':
     #max_iterations = 1
     #m = 10
     runs = 1
-    flag_plot = 1
+    flag_plot = 0
 
     p = DE(pop_size)
     p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, flag_plot, maximize=True)
