@@ -280,10 +280,19 @@ class DE:
             lp.append(uniform(lb[d],ub[d]))
         self.pop[alvo] = lp
 
-    def generateNormalIndividual(self, best, dim, alvo):
+    def generateNormalIndividual(self, best, dim, alvo, alpha, f):
+        ub = [0] * dim
+        lb = [0] * dim
+        for k in range(dim):
+            ub[k] = f.get_ubound(k)
+            lb[k] = f.get_lbound(k)
         lp = []
         for d in range(dim):
-            lp.append(np.random.normal(best[d], 0.05))
+            lp.append(np.random.normal(best[d], alpha))
+            if lp[d] > ub[d]:
+                lp[d] = ub[d]
+            elif lp[d] < lb[d]:
+                lp[d] = lb[d]
         self.pop[alvo] = lp
 
     def evaluatePopulation(self, func, f):
@@ -489,19 +498,22 @@ class DE:
                 #self.full_euclidean[x] = dist
         self.euclidean_distance_full2(dim)
 
-    def normalize_pop_around_peaks(self, best_individuals, nclusters, popsize, dim, individuals_toReplace):
+    def normalize_pop_around_peaks(self, best_individuals, nclusters, popsize, dim, individuals_toReplace, f):
         k = 0
 
         individuals_per_peak = int(len(individuals_toReplace)/nclusters)
         #print("pop antes: ", self.pop)
         for i in best_individuals:
-            for j in range(0, individuals_per_peak):
-                self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[j + k])
+            alpha = 0.05
+            for j in range(0, individuals_per_peak): 
+                self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[j + k], alpha, f)
+                alpha = alpha + 0.05               
             k = k + individuals_per_peak
         for i in best_individuals:
             if k >= len(individuals_toReplace):
                 break
-            self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[k])
+            alpha = 0.05
+            self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[k], alpha, f)
             k = k + 1
             
         #print("pop depois: ", self.pop)
@@ -556,6 +568,7 @@ class DE:
         #to record the results
         results = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/results.txt', 'a')
         records = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/records.txt', 'a')
+        clusters = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/clusters.txt', 'a')
         results.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
         results.write('=================================================================================================================\n')
         records.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
@@ -578,6 +591,8 @@ class DE:
             start = time()
             records.write('Run: %i\n' % r)
             records.write('Iter\tGbest\tAvrFit\tDiver\tETime\t\n')
+
+            clusters.write('Run: %i\n' % r)
             
             #start the algorithm
             best = [] #global best positions
@@ -801,7 +816,7 @@ class DE:
                     individuals_toReplace = []
                     Y = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-                    db = DBSCAN(eps=0.2, min_samples=1).fit(Y)
+                    db = DBSCAN(eps=0.1, min_samples=1).fit(Y)
                     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
                     core_samples_mask[db.core_sample_indices_] = True
                     labels = db.labels_
@@ -835,7 +850,7 @@ class DE:
                     
                     individuals_toReplace = list(set(list_aux) - set(best_individuals))
 
-                    self.normalize_pop_around_peaks(best_individuals, n_clusters_, pop_size, dim, individuals_toReplace)
+                    self.normalize_pop_around_peaks(best_individuals, n_clusters_, pop_size, dim, individuals_toReplace, f)
 
                     self.pop_aux2 = self.pop
 
@@ -843,6 +858,9 @@ class DE:
                     self.full_euclidean = self.full_euclidean.pop()
                     for control in range(pop_size):
                         self.full_euclidean[control][control] = math.inf
+
+                    clusters.write('%i  Clusters: %lf \n' % (iteration, n_clusters_))
+                    #records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
                     # Z = StandardScaler(with_mean=False).fit_transform(self.pop)
 
@@ -944,6 +962,7 @@ class DE:
                 # print ( '' )
                 # print ( '  F(X*) = %lf' % ( f.evaluate(self.pop[ind]) ) )
                 print(ind)
+                print(self.pop[ind])
                 it, endpt = hooke(dim, self.pop[ind], rho, eps, itermax, f)
                 self.pop[ind] = endpt
                 # r8vec_print ( dim, endpt, '  Final estimate for X:' )
@@ -1139,7 +1158,7 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 13
+    nfunc = 15
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
@@ -1148,8 +1167,8 @@ if __name__ == '__main__':
     max_iterations = int((f.get_maxfes() // pop_size)*0.7)
     #max_iterations = 1
     #m = 10
-    runs = 5
-    flag_plot = 0
+    runs = 1
+    flag_plot = 1
 
     p = DE(pop_size)
     p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, flag_plot, maximize=True)
