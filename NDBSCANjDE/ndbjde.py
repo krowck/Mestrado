@@ -503,16 +503,22 @@ class DE:
                 #self.full_euclidean[x] = dist
         self.euclidean_distance_full2(dim)
 
-    def normalize_pop_around_peaks(self, best_individuals, nclusters, popsize, dim, individuals_toReplace, f):
+    def normalize_pop_around_peaks(self, best_individuals, nclusters, popsize, dim, individuals_toReplace, f, fpop):
         k = 0
 
         individuals_per_peak = int(len(individuals_toReplace)/nclusters)
         #print("pop antes: ", self.pop)
+
         for i in best_individuals:
+            #print("BEST INDIVIDUAL: ", self.pop[i])
             alpha = 0.05
             for j in range(0, individuals_per_peak): 
+                #print(self.pop[individuals_toReplace[j + k]])           
                 self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[j + k], alpha, f)
-                alpha = alpha + 0.05               
+                alpha = alpha + 0.05
+                fpop[individuals_toReplace[j + k]] = f.evaluate(self.pop[individuals_toReplace[j + k]]) 
+                #print("Individuo GERADO: ", self.pop[individuals_toReplace[j + k]])           
+
             k = k + individuals_per_peak
         for i in best_individuals:
             if k >= len(individuals_toReplace):
@@ -556,7 +562,7 @@ class DE:
                 self.crossover_rate_T[ind] = self.crossover_rate[ind]        
 
 
-    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, accuracy, flag_plot, maximize=True):
+    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, accuracy, flag_plot, eps_value, maximize=True):
 
         crowding_target = 0
         neighborhood_list = []
@@ -708,6 +714,7 @@ class DE:
                     yplot = []
                 
                 self.update_jDE(pop_size)                
+                
 
                 for ind in range(0,len(self.pop)):
 
@@ -733,11 +740,13 @@ class DE:
 
                     fcandSol = f.evaluate(candSol)
 
+                    #print("cand sol e fitness", candSol, fcandSol)
+
                     dist, crowding_target = self.euclidean_distance2(candSol, ind, dim)
 
                     if maximize == True:
                         if fcandSol >= fpop[crowding_target]:
-                            self.pop_aux2[crowding_target] = candSol
+                            self.pop[crowding_target] = candSol
                             #self.pop[crowding_target] = candSol
                             #dist_correta, aux = self.euclidean_distance2(candSol, crowding_target, dim)
                             #self.full_euclidean_aux[crowding_target] = dist_correta
@@ -752,8 +761,9 @@ class DE:
                 # print([fpop[i] for i in idx[:5] if fpop[i] > -1000])
 
                 # sleep(10)
+                fpop = self.evaluatePopulation(func, f)
 
-                self.pop = self.pop_aux2
+                #self.pop = self.pop_aux2
                 self.euclidean_distance_full2(dim)
                 self.full_euclidean = self.full_euclidean.pop()
                 for control in range(pop_size):
@@ -785,14 +795,37 @@ class DE:
                 if iteration%150 == 0 and iteration != 0 or iteration == max_iterations-1:
 
                     individuals_toReplace = []
-                    Y = StandardScaler(with_mean=False).fit_transform(self.pop)
+                    Y = StandardScaler(with_mean=True).fit_transform(self.pop)
 
-                    db = DBSCAN(eps=0.1, min_samples=1).fit(Y)
+                    db = DBSCAN(eps=eps_value, min_samples=1).fit(Y)
                     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
                     core_samples_mask[db.core_sample_indices_] = True
                     labels = db.labels_
 
                     n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+
+                    # print('Estimated number of clusters: %d' % n_clusters_)
+
+                    # unique_labels = set(labels)
+                    # colors = [plt.cm.Spectral(each)
+                    #           for each in np.linspace(0, 1, len(unique_labels))]
+                    # for k, col in zip(unique_labels, colors):
+                    #     if k == -1:
+                    #         # Black used for noise.
+                    #         col = [0, 0, 0, 1]
+
+                    #     class_member_mask = (labels == k)
+
+                    #     xy = X[class_member_mask & core_samples_mask]
+                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                    #              markeredgecolor='k', markersize=14)
+
+                    #     xy = X[class_member_mask & ~core_samples_mask]
+                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                    #              markeredgecolor='k', markersize=6)
+
+                    # plt.title('Estimated number of clusters: %d' % n_clusters_)
+                    # plt.show()
 
                     temp = [0] * n_clusters_
                     best_individuals = [0] * n_clusters_
@@ -810,7 +843,10 @@ class DE:
                     #print(temp)
 
 
+                    print("NUMERO DE CLUSTERS: ", n_clusters_)
+                    fpop_aux = [0] * n_clusters_
                     for i in range(n_clusters_):
+                        
                         temp_best = -999999
                         indice_best = -1
                         for x in temp[i]:
@@ -818,12 +854,24 @@ class DE:
                                 temp_best = fpop[x]
                                 indice_best = x
                             best_individuals[i] = indice_best
+                            fpop_aux[i] = fpop[indice_best]
+
+                    #print(fpop_aux)                    
+                    print(sorted(fpop_aux))
+
+                    for i in best_individuals:
+                       print(self.pop[i], fpop[i])
+
+                    #print(best_individuals)
+                    #sleep(10)
+
+
                     
                     individuals_toReplace = list(set(list_aux) - set(best_individuals))
 
-                    self.normalize_pop_around_peaks(best_individuals, n_clusters_, pop_size, dim, individuals_toReplace, f)
+                    self.normalize_pop_around_peaks(best_individuals, n_clusters_, pop_size, dim, individuals_toReplace, f, fpop)
 
-                    self.pop_aux2 = self.pop
+                    #self.pop_aux2 = self.pop
 
                     self.euclidean_distance_full2(dim)
                     self.full_euclidean = self.full_euclidean.pop()
@@ -832,10 +880,42 @@ class DE:
 
                     clusters.write('%i  Clusters: %lf \n' % (iteration, n_clusters_))
 
+                    Z = StandardScaler(with_mean=False).fit_transform(self.pop)
+
+                    db = DBSCAN(eps=eps_value, min_samples=1).fit(Z)
+                    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                    core_samples_mask[db.core_sample_indices_] = True
+                    labels = db.labels_
+
+                    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+
+                    # print('Estimated number of clusters: %d' % n_clusters_)
+
+                    # unique_labels = set(labels)
+                    # colors = [plt.cm.Spectral(each)
+                    #           for each in np.linspace(0, 1, len(unique_labels))]
+                    # for k, col in zip(unique_labels, colors):
+                    #     if k == -1:
+                    #         # Black used for noise.
+                    #         col = [0, 0, 0, 1]
+
+                    #     class_member_mask = (labels == k)
+
+                    #     xy = X[class_member_mask & core_samples_mask]
+                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                    #              markeredgecolor='k', markersize=14)
+
+                    #     xy = X[class_member_mask & ~core_samples_mask]
+                    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                    #              markeredgecolor='k', markersize=6)
+
+                    # plt.title('Estimated number of clusters: %d' % n_clusters_)
+                    # plt.show()
+
                 #print(sorted(self.pop) == sorted(self.pop_aux2))
                 X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-                db = DBSCAN(eps=0.9, min_samples=1).fit(X)
+                db = DBSCAN(eps=eps_value, min_samples=1).fit(X)
                 core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
                 core_samples_mask[db.core_sample_indices_] = True
                 labels = db.labels_
@@ -845,10 +925,9 @@ class DE:
 
                 self.nclusters_list.append(n_clusters_2)
 
-
             X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
-            db = DBSCAN(eps=0.1, min_samples=1).fit(X)
+            db = DBSCAN(eps=eps_value, min_samples=1).fit(X)
             core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
             core_samples_mask[db.core_sample_indices_] = True
             labels = db.labels_
@@ -879,6 +958,9 @@ class DE:
                         indice_best = x
                     best_individuals[i] = indice_best
 
+
+
+
             itermax = int((f.get_maxfes()*0.3/len(best_individuals))/dim)
             rho = 0.9
             eps = 1.0E-50
@@ -892,13 +974,17 @@ class DE:
                 # print ( '' )
                 # print ( '  F(X*) = %lf' % ( f.evaluate(self.pop[ind]) ) )
                 print(ind)
-                print(self.pop[ind])
-                it, endpt = hooke(dim, self.pop[ind], rho, eps, itermax, f)
+                print("Antes:", self.pop[ind])
+                it, endpt = hooke(dim, self.pop[ind], rho, eps, itermax, f)                
                 self.pop[ind] = endpt
+                print("Depois:", self.pop[ind])
                 # r8vec_print ( dim, endpt, '  Final estimate for X:' )
                 # print ( '' )
                 # print ( '  F(X*) = %lf' % ( f.evaluate(endpt) ) )          
                 # print("iteracoes >>>", it)  
+            fpop = self.evaluatePopulation(func, f)
+            for ind in best_individuals:
+                print(self.pop[ind], fpop[ind])
 
 
             ######### TESTE INDIVIDUAL #############
@@ -1019,7 +1105,8 @@ class DE:
             # self.pop[8] = [-3.5477180790859295, 4.2755145150028451]
             # self.pop[9] = [-1.9351333343067720, 3.3777433989028154]
 
-
+            fpop = self.evaluatePopulation(nfunc, f)
+            print(fpop)
             print(self.pop)
             #self.printPopulation(fpop)
             #print(self.pop)
@@ -1091,7 +1178,7 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 12
+    nfunc = 17
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
@@ -1101,8 +1188,9 @@ if __name__ == '__main__':
     #max_iterations = 1
     #m = 10
     runs = 1
-    flag_plot = 0
+    flag_plot = 1
+    eps_value = 0.4
 
     p = DE(pop_size)
-    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, flag_plot, maximize=True)
+    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, flag_plot, eps_value, maximize=True)
 

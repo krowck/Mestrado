@@ -1,0 +1,20 @@
+Run: 0
+150  Clusters: 57.000000 
+300  Clusters: 68.000000 
+450  Clusters: 69.000000 
+600  Clusters: 71.000000 
+750  Clusters: 74.000000 
+900  Clusters: 76.000000 
+1050  Clusters: 77.000000 
+1200  Clusters: 81.000000 
+1350  Clusters: 84.000000 
+1500  Clusters: 85.000000 
+1650  Clusters: 86.000000 
+1800  Clusters: 88.000000 
+1950  Clusters: 88.000000 
+2100  Clusters: 89.000000 
+2250  Clusters: 90.000000 
+2400  Clusters: 92.000000 
+2550  Clusters: 92.000000 
+2700  Clusters: 92.000000 
+2799  Clusters: 92.000000 
