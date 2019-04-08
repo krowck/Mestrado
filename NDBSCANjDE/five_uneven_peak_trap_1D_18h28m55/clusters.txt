@@ -1,3 +1,0 @@
-Run: 0
-150  Clusters: 5.000000 
-300  Clusters: 5.000000 
