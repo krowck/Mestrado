@@ -4,7 +4,9 @@ from os import mkdir
 import math
 import numpy as np
 import copy
+import sys
 import sobol_seq
+import argparse
 from statistics import median, stdev
 from matplotlib import pyplot as plt
 from time import gmtime, strftime, localtime, time, sleep
@@ -21,6 +23,25 @@ from sklearn.preprocessing import StandardScaler
 
 import uuid
 #import cProfile
+
+def update_progress(progress):
+    barLength = 10 # Modify this to change the length of the progress bar
+    status = ""
+    if isinstance(progress, int):
+        progress = float(progress)
+    if not isinstance(progress, float):
+        progress = 0
+        status = "error: progress var must be float\r\n"
+    if progress < 0:
+        progress = 0
+        status = "Halt...\r\n"
+    if progress >= 1:
+        progress = 1
+        status = "... Done!\r\n"
+    block = int(round(barLength*progress))
+    text = "\rPercent: [{0}] {1:.0f}% {2}".format( "#"*block + "-"*(barLength-block), progress*100.0, status)
+    sys.stdout.write(text)
+    sys.stdout.flush()
 
 def r8vec_print ( n, a, title ):
   print ( '' )
@@ -249,13 +270,12 @@ class DE:
 
         vec = sobol_seq.i4_sobol_generate(dim, pop_size)
         
-
         for i in range(pop_size):
-        	lp = []
-        	for d in range(dim):
-        		#print(vec[i][d])
-        		lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
-        	self.pop.append(lp)
+            lp = []
+            for d in range(dim):
+                #print(vec[i][d])
+                lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
+            self.pop.append(lp)
 
         # s = np.random.uniform(0, 1, (pop_size, dim))
 
@@ -397,15 +417,12 @@ class DE:
 
         cutpoint = randint(0, dim-1)
         candidateSol = []
-        
-        for i in range(dim):
-            candidateSol.append(ind[i] + uniform(0,1)*(p1[i] - ind[i]) + wf*(p2[i] - p3[i]))
 
-        # for i in range(dim):
-        #     if(i == cutpoint or uniform(0,1) < cr):
-        #         candidateSol.append(ind[i]+wf*(best[i]-ind[i])+wf*(p1[i]-p2[i])) # -> rand(p3) , vetor diferença (wf*(p1[i]-p2[i]))
-        #     else:
-        #         candidateSol.append(ind[i])
+        for i in range(dim):
+            if(i == cutpoint or uniform(0,1) < cr):
+                candidateSol.append(ind[i]+wf*(best[i]-ind[i])+wf*(p1[i]-p2[i])) # -> rand(p3) , vetor diferença (wf*(p1[i]-p2[i]))
+            else:
+                candidateSol.append(ind[i])
 
         return candidateSol
 
@@ -425,13 +442,9 @@ class DE:
     def euclidean_distance_full2(self, dim):
         dist1 = np.zeros((len(self.pop), dim))
         self.pop = np.asarray(self.pop) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
-        #print(self.pop)
         dist1 = dist(self.pop, self.pop)
-        #dist1 = dist(self.pop, self.pop)
-        #print(dist1)
         self.pop = self.pop.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
         dist1 = dist1.tolist()
-        #print(dist1)
         self.full_euclidean.append(dist1)
 
     def euclidean_distance(self, alvo, k, dim, f):
@@ -446,10 +459,6 @@ class DE:
                 for j in range(dim):
                     diff = self.pop[i][j] - alvo[j]
                     s += np.linalg.norm(diff)
-                # if(s < 0.00000001):
-                #     print("Individuals too close! Generating new one.")
-                #     self.generateIndividual(i, dim, f)
-                #     i = i-1
                 dist.append(s)
         return dist, dist.index(min(dist))
 
@@ -457,35 +466,19 @@ class DE:
         dist1 = np.zeros((len(self.pop), dim))
         alvo = np.asarray([alvo])
         self.pop = np.asarray(self.pop) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
-        #print(self.pop, alvo)
         dist1 = dist(alvo, self.pop)
-        #dist1 = dist(alvo, self.pop)
-        #print(dist1)
-        #print(np.argmin(dist1))
         self.pop = self.pop.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
         dist1 = dist1.tolist()
         dist1 = dist1.pop()
-        #print(dist1)
-        #print(min(dist1))
-        #print(dist1.index(min(dist1)))
-        #sleep(10)
         return dist1, dist1.index(min(dist1))
-        #self.full_euclidean.append(dist1)
 
     def generate_neighborhood(self, ind, m, dim, f):
         vec_dist = []
         vec_dist = list(self.full_euclidean[ind])
         neighborhood_list = [-1] * m
-        #print("VEC-DIST ANTES:", vec_dist)
-        #print(ind, m, dim)
-
-        #vec_dist = self.euclidean_distance_vec(self.pop[ind], ind, dim, f)
         for k in range(m):
             neighborhood_list[k] = vec_dist.index(min(vec_dist))            
             vec_dist[vec_dist.index(min(vec_dist))] = math.inf
-        #print("vec_aux>>>>>>>", vec_aux)
-        #print("VEC_DIST -->", vec_dist)
-        #print(self.full_euclidean)
         return neighborhood_list
 
     def reset_pop(self, labels, counter, ncluster, m, dim, f):
@@ -499,26 +492,18 @@ class DE:
             print(temp, len(temp), m)
             for x in temp_aux:
                 self.generateIndividual(x, dim, f)
-                #dist, alvo = self.euclidean_distance2(self.pop[x], x, dim)
-                #self.full_euclidean[x] = dist
         self.euclidean_distance_full2(dim)
 
     def normalize_pop_around_peaks(self, best_individuals, nclusters, popsize, dim, individuals_toReplace, f, fpop):
         k = 0
-
         individuals_per_peak = int(len(individuals_toReplace)/nclusters)
-        #print("pop antes: ", self.pop)
 
         for i in best_individuals:
-            #print("BEST INDIVIDUAL: ", self.pop[i])
             alpha = 0.05
-            for j in range(0, individuals_per_peak): 
-                #print(self.pop[individuals_toReplace[j + k]])           
+            for j in range(0, individuals_per_peak):          
                 self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[j + k], alpha, f)
                 alpha = alpha + 0.05
                 fpop[individuals_toReplace[j + k]] = f.evaluate(self.pop[individuals_toReplace[j + k]]) 
-                #print("Individuo GERADO: ", self.pop[individuals_toReplace[j + k]])           
-
             k = k + individuals_per_peak
         for i in best_individuals:
             if k >= len(individuals_toReplace):
@@ -526,9 +511,6 @@ class DE:
             alpha = 0.05
             self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[k], alpha, f)
             k = k + 1
-            
-        #print("pop depois: ", self.pop)
-        #sleep(5)
 
     def generate_individual_neighborhood(self, labels):
         aux = []
@@ -571,8 +553,6 @@ class DE:
         m = 0
         PR = [] #PEAK RATIO
         SR = 0.0
-        #generate execution identifier
-        #uid = uuid.uuid4()
         hora = strftime("%Hh%Mm%S", localtime())
         mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora))
         mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) +'/graphs')
@@ -593,7 +573,7 @@ class DE:
         ub = f.get_ubound(0)
         lb = f.get_lbound(0)
         min_value_vector = []
-
+        porcentagem = 0
         
         #runs
         for r in range(runs):
@@ -605,11 +585,8 @@ class DE:
             records.write('Iter\tGbest\tAvrFit\tDiver\tETime\t\n')
 
             clusters.write('Run: %i\n' % r)
-            
-            #start the algorithm
             best = [] #global best positions
-            fbest = 0.00
-                    
+            fbest = 0.00                    
             #global best fitness
             if maximize == True:
                 fbest = 0.00
@@ -657,23 +634,17 @@ class DE:
 
             # plt.show()
 
-            #for ind in range(pop_size):                
-            #print(self.full_euclidean)
-            #self.full_euclidean = []
+            #Euclidean distance to calculate the neighborhood mutation
             self.euclidean_distance_full2(dim)
             self.full_euclidean = self.full_euclidean.pop()
             for control in range(pop_size):
                 self.full_euclidean[control][control] = math.inf
-            #print(self.full_euclidean)
-            #sleep(10)
             self.full_euclidean_aux = self.full_euclidean
 
 
             fbest,best = self.getBestSolution(maximize, fpop)
-            #evolution_step
             myCR = 0.0
             myF = 0.0
-            # generates crossover rate values
             cr_list = []
 
             if dim == 2 and flag_plot == 1:
@@ -687,14 +658,11 @@ class DE:
             for i in range(0, pop_size):
                 list_aux[i] = i
 
-            print(max_iterations)
+            #print(max_iterations)
             for iteration in range(max_iterations):
 
+                update_progress(iteration/(max_iterations-1))
 
-                #if (f.get_fitness_goptima() - avrFit < accuracy):
-                #    print("fitness medio menor que acuracia %f %f", avrFit, f.get_fitness_goptima() )
-
-                print(iteration)
                 if pop_size <= 200:
                     m=math.floor(3+10*((max_iterations-iteration)/max_iterations))
                 else:
@@ -702,12 +670,6 @@ class DE:
                 m = 4
 
                 avrFit = 0.00
-                 
-                # #update_solutions
-                strategy = 0
-                #print(mutation_rate)
-                #print(crossover_rate)
-                #sleep(5)
 
                 if flag_plot == 1:
                     xplot = []
@@ -729,59 +691,41 @@ class DE:
                     if uniform(0,1) < 1:
                         neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
                         candSol = self.rand_1_bin(self.pop[ind], ind, dim, myCR, myF, neighborhood_list, m)
-                        #candSol = self.currentToRand_1_bin(self.pop[ind], ind, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
-                        strategy = 1
                     else:
                         neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
                         candSol = self.currentToBest_2_bin(self.pop[ind], ind, best, dim, mutation_rate[ind], crossover_rate[ind], neighborhood_list, m)
-                        strategy = 2
                     
                     self.boundsRes(candSol, f, dim)
 
                     fcandSol = f.evaluate(candSol)
-
-                    #print("cand sol e fitness", candSol, fcandSol)
 
                     dist, crowding_target = self.euclidean_distance2(candSol, ind, dim)
 
                     if maximize == True:
                         if fcandSol >= fpop[crowding_target]:
                             self.pop[crowding_target] = candSol
-                            #self.pop[crowding_target] = candSol
-                            #dist_correta, aux = self.euclidean_distance2(candSol, crowding_target, dim)
-                            #self.full_euclidean_aux[crowding_target] = dist_correta
-                            #self.full_euclidean[crowding_target] = dist_correta
                             fpop[crowding_target] = fcandSol                            
                             self.mutation_rate[ind] = self.mutation_rate_T[ind]
                             self.crossover_rate[ind] = self.crossover_rate_T[ind]
                     avrFit += fpop[crowding_target]
 
-                # idx = np.argpartition(fpop, 10)
-                # min_vector
-                # print([fpop[i] for i in idx[:5] if fpop[i] > -1000])
-
-                # sleep(10)
                 fpop = self.evaluatePopulation(func, f)
 
-                #self.pop = self.pop_aux2
                 self.euclidean_distance_full2(dim)
                 self.full_euclidean = self.full_euclidean.pop()
                 for control in range(pop_size):
                     self.full_euclidean[control][control] = math.inf
-                #self.full_euclidean = self.full_euclidean_aux
 
                 if dim == 2 and flag_plot == 1:
                     plt.xlim(lb, ub)
                     plt.ylim(lb, ub)
 
-                    plt.draw()
-                
+                    plt.draw()                
                     
                     sc.set_offsets(np.c_[xplot,yplot])
                     fig.canvas.draw_idle()
                     plt.pause(0.0001)
 
-                #plt.waitforbuttonpress()
 
                 avrFit = avrFit/pop_size
                 self.diversity.append(0)
@@ -840,10 +784,7 @@ class DE:
                     for j in range(n_clusters_):
                         temp[j] = [i for i,x in enumerate(labels) if x==j]
 
-                    #print(temp)
-
-
-                    print("NUMERO DE CLUSTERS: ", n_clusters_)
+                    #print("NUMERO DE CLUSTERS: ", n_clusters_)
                     fpop_aux = [0] * n_clusters_
                     for i in range(n_clusters_):
                         
@@ -857,10 +798,10 @@ class DE:
                             fpop_aux[i] = fpop[indice_best]
 
                     #print(fpop_aux)                    
-                    print(sorted(fpop_aux))
+                    #print(sorted(fpop_aux))
 
-                    for i in best_individuals:
-                       print(self.pop[i], fpop[i])
+                    #for i in best_individuals:
+                    #   print(self.pop[i], fpop[i])
 
                     #print(best_individuals)
                     #sleep(10)
@@ -940,14 +881,10 @@ class DE:
             k = pop_size - Counter(labels).most_common(1)[0][1]
             idx = np.argpartition(fpop, -k)
 
-            print(k, idx)
             min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
-            print(labels)
 
             for j in range(n_clusters_):
                 temp[j] = [i for i,x in enumerate(labels) if x==j]
-
-            print(temp)
 
             for i in range(n_clusters_):
                 temp_best = -999999
@@ -965,38 +902,18 @@ class DE:
             rho = 0.9
             eps = 1.0E-50
 
-            print(itermax)
+            #print(itermax)
 
-            print(best_individuals, len(best_individuals))
+            #print(best_individuals, len(best_individuals))
 
+            #LOCAL-SEARCH ROUTINE (HOOKE-JEEVES)
             for ind in best_individuals:
-                # r8vec_print ( dim, self.pop[ind], '  Initial estimate for X:' )
-                # print ( '' )
-                # print ( '  F(X*) = %lf' % ( f.evaluate(self.pop[ind]) ) )
-                print(ind)
-                print("Antes:", self.pop[ind])
                 it, endpt = hooke(dim, self.pop[ind], rho, eps, itermax, f)                
                 self.pop[ind] = endpt
-                print("Depois:", self.pop[ind])
-                # r8vec_print ( dim, endpt, '  Final estimate for X:' )
-                # print ( '' )
-                # print ( '  F(X*) = %lf' % ( f.evaluate(endpt) ) )          
-                # print("iteracoes >>>", it)  
+
             fpop = self.evaluatePopulation(func, f)
-            for ind in best_individuals:
-                print(self.pop[ind], fpop[ind])
-
-
-            ######### TESTE INDIVIDUAL #############
-            #[-0.49962981780933857, -4.012538978304359]
-            #[-2.1876836947475446, 1.6906980461171564]
-            # self.pop[2] = [-0.49969506538256958, -4.0125970848019490]
-            # self.pop[3] = [-2.1849843511337519, 1.6870539388189698]
-            # it, endpt = hooke(dim, [-0.49969540920104254, -4.0125977765816], rho, eps, 10000, f)
-            # print(it)
-            # r8vec_print ( dim, endpt, '  Final estimate for X:' )
-            # print ( '' )
-            # print ( '  F(X*) = %.10lf' % ( f.evaluate(endpt) ) )     
+            #for ind in best_individuals:
+            #    print(self.pop[ind], fpop[ind])   
             
             # if dim >= 2:
             #     X = StandardScaler(with_mean=False).fit_transform(self.pop)
@@ -1044,77 +961,9 @@ class DE:
             pop_aux = []
             pop_aux = self.pop
 
-            #CF4 - 3D
-            # self.pop[0] = [-3.395113021, -3.317307, 2.34683607]
-            # self.pop[1] = [4.14125693, 2.4770118101, 2.66982013]
-            # self.pop[2] = [-0.499695065, -4.012597084, -4.88089688]
-            # self.pop[3] = [-2.184984351, 1.687053938, 0.58786288]
-            # self.pop[4] = [1.7577435, 1.5957372547, -4.3089313 ]
-            # self.pop[5] = [-1.561544695, 4.400020671757, 3.28529486]
-            # self.pop[6] = [0.1628760722, 3.78150997, 4.52427265]
-            # self.pop[7] = [-1.481471, 3.674022685, -4.85865102]
-
-
-            # CF1 - 2D
-            # self.pop[0] = [-3.39511302, -3.3173072 ]
-            # self.pop[1] = [ 4.14125693,  2.47701181]
-            # self.pop[2] = [-0.499695065382, -4.0125970848]
-            # self.pop[3] = [-2.18498435112,  1.6870539388]
-            # #self.pop[2] = [-0.49969507, -4.01259708]
-            # #self.pop[3] = [-2.18498435,  1.68705393]
-            # self.pop[4] = [ 1.75774359,  1.59573725]
-            # self.pop[5] = [-1.5615447,   4.40002067]
-            # self.pop[6] = [0.1628760722, 3.78150997]
-            # self.pop[7] = [-1.481471, 3.674022685]
-            # self.pop[8] = [-3.5477180790859295, 4.2755145150028451]
-            # self.pop[9] = [-1.9351333343067720, 3.3777433989028154]
-
-            #CF3 - 2D
-            # [[-3.39511302 -3.3173072 ]
-            # [ 4.14125693  2.47701181]
-            # [-0.49969507 -4.01259708]
-            # [-2.18498435  1.68705394]
-            # [ 1.75774359  1.59573725]
-            # [-1.5615447   4.40002067]]
-
-
-            # PONTOS DE OTIMOS GLOBAIS ENCONTRADOS PELO ALGORITMO !!!
-            # [[ 4.14125692  2.4770118 ]            
-            # [-3.39511302 -3.31730718]
-            # [-2.18498435  1.68705394]
-            # [-1.5615447   4.40002067]
-            # [ 1.75774359  1.59573725]
-            # [-0.49969507 -4.01259708]]
-
-
-            # [[-3.39511302 -3.3173072 ]
-            # [ 4.14125693  2.47701181]
-            # [-0.49969507 -4.01259708]
-            # [-2.18498435  1.68705394]
-            # [ 1.75774359  1.59573725]
-            # [-1.5615447   4.40002067]]
-
-            # self.pop[0] = [-3.3951130216688377, -3.3173071972012478]
-            # self.pop[1] = [4.1412569323950272, 2.4770118101548775]
-            # self.pop[2] = [-0.49969506538256958, -4.0125970848019490]
-            # self.pop[3] = [-2.1849843511337519, 1.6870539388189698]
-            # self.pop[4] = [1.7577435911230559, 1.5957372547859912]
-            # self.pop[5] = [-1.5615446958531698, 4.4000206717579662]
-            # self.pop[6] = [0.16287607224326184, 3.7815099725568899]
-            # self.pop[7] = [-1.4814715358981081, 3.6740226851151405]
-            # self.pop[8] = [-3.5477180790859295, 4.2755145150028451]
-            # self.pop[9] = [-1.9351333343067720, 3.3777433989028154]
-
             fpop = self.evaluatePopulation(nfunc, f)
-            print(fpop)
-            print(self.pop)
-            #self.printPopulation(fpop)
-            #print(self.pop)
 
             count, seeds = how_many_goptima(self.pop, f, accuracy, len(self.pop), pop_aux)
-
-            print('Otimos Globais encontados: ')
-            print(seeds)
             
             count_global += count
 
@@ -1124,9 +973,8 @@ class DE:
             self.fbest_list = []
             self.nclusters_list = []
 
-            print("ENTROu")
             PR.append(count_global/f.get_no_goptima())
-            print(PR[r])
+            print("Peak Ratio: %.4f" % PR[r])
             if(PR[r] == 1):
                 SR += 1
 
@@ -1178,18 +1026,37 @@ class DE:
 if __name__ == '__main__': 
     from ndbjde import DE
     funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
-    nfunc = 17
+    #nfunc = 1
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-f', action='store', help='Function to be optimized.')
+    parser.add_argument('-p', action='store', help='Population size.')
+    parser.add_argument('-a', action='store', help='Accuracy of the algorithm.')
+    parser.add_argument('-r', action='store', help='Number of runs.')
+    parser.add_argument('-flag', action='store', help='Flag to plot.')
+
+    args = parser.parse_args()
+
+    nfunc = int(args.f)
+    pop_size = int(args.p)
+    accuracy = float(args.a)
+    runs = int(args.r)
+    flag_plot = int(args.flag)
+
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    pop_size = 150
-    accuracy = 0.001
+    #pop_size = 50
+    #accuracy = 0.001
     max_iterations = int((f.get_maxfes() // pop_size)*0.7)
     #max_iterations = 1
     #m = 10
-    runs = 1
-    flag_plot = 1
+    #runs = 5
+    #flag_plot = 1
     eps_value = 0.4
+
+    
+
 
     p = DE(pop_size)
     p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, flag_plot, eps_value, maximize=True)
