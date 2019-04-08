@@ -216,7 +216,7 @@ class DE:
         plt.savefig(str(uid) + '_' + str(dim) + 'D_' + str(hora) + '/graphs/run' + str(run) + '_' + 'diversity.png')
         plt.clf()
         plt.plot(range(0, max_iterations), diversity_list, 'b--')
-        plt.ylim(ymin=0)
+        plt.ylim(bottom=0)
         plt.savefig(str(uid) + '_' + str(dim) + 'D_'  + str(hora) + '/graphs/run' + str(run) + '_' + 'diversity_normalizado.png')
         plt.clf()
                                                        
@@ -1029,30 +1029,24 @@ if __name__ == '__main__':
     #nfunc = 1
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-f', action='store', help='Function to be optimized.')
-    parser.add_argument('-p', action='store', help='Population size.')
-    parser.add_argument('-a', action='store', help='Accuracy of the algorithm.')
-    parser.add_argument('-r', action='store', help='Number of runs.')
-    parser.add_argument('-flag', action='store', help='Flag to plot.')
+    parser.add_argument('-f', action='store', type=int, help='Function to be optimized.')
+    parser.add_argument('-p', action='store', type=int, help='Population size.')
+    parser.add_argument('-a', action='store', type=float, help='Accuracy of the algorithm.')
+    parser.add_argument('-r', action='store', type=int, help='Number of runs.')
+    parser.add_argument('-flag', action='store', type=int, help='Flag to plot (0 or 1).')
 
     args = parser.parse_args()
 
-    nfunc = int(args.f)
-    pop_size = int(args.p)
-    accuracy = float(args.a)
-    runs = int(args.r)
-    flag_plot = int(args.flag)
+    nfunc = (args.f)
+    pop_size = (args.p)
+    accuracy = (args.a)
+    runs = (args.r)
+    flag_plot = (args.flag)
 
     f = CEC2013(nfunc)
     cost_func = funcs[nfunc]             # Fitness Function
     dim = f.get_dimension()
-    #pop_size = 50
-    #accuracy = 0.001
     max_iterations = int((f.get_maxfes() // pop_size)*0.7)
-    #max_iterations = 1
-    #m = 10
-    #runs = 5
-    #flag_plot = 1
     eps_value = 0.4
 
     

@@ -68,8 +68,8 @@ def auto_dtype(A, B):
     precision = np.result_type(A.dtype, B.dtype)
 
     # Cast to float32 dtype for dtypes that are not float
-    if np.issubdtype(precision, float)==0:
-        precision = np.float32
+    # if np.issubdtype(precision, float)==0:
+    #     precision = np.float32
 
     return precision
 
