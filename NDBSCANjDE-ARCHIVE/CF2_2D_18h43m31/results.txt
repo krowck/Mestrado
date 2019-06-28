@@ -1,0 +1,29 @@
+ID: CF2	Date: 2019-05-03 21:43:31	Runs: 10
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 1066
+Funcao Otimizada: <class 'CF2.CF2'>
+Gbest Overall: -0.0000
+Positions: [0.16286533638042563, 3.7815040645788853]
+Mean Peaks Found on Run 0: 1.000000 (8.000000)
+Mean Peaks Found on Run 1: 1.000000 (8.000000)
+Mean Peaks Found on Run 2: 1.000000 (8.000000)
+Mean Peaks Found on Run 3: 1.000000 (8.000000)
+Mean Peaks Found on Run 4: 1.000000 (8.000000)
+Mean Peaks Found on Run 5: 1.000000 (8.000000)
+Mean Peaks Found on Run 6: 1.000000 (8.000000)
+Mean Peaks Found on Run 7: 1.000000 (8.000000)
+Mean Peaks Found on Run 8: 1.000000 (8.000000)
+Mean Peaks Found on Run 9: 1.000000 (8.000000)
+Mean Peaks Found: 1.0000
+Peak Ratio Standard Deviation: 0.0000
+[1.00000, 1.00000, 1.00000, 1.00000, 1.00000, 1.00000, 1.00000, 1.00000, 1.00000, 1.00000, ]
+Success rate: 1.0000
+
+Gbest Average: -0.0007
+Gbest Median: -0.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Gbest Standard Deviation: 0.0021
+
+Elappsed Time Average: 4.4308
+Elappsed Time Standard Deviation: 0.6697
+=================================================================================================================

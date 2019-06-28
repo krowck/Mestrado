@@ -1,0 +1,29 @@
+ID: shubert	Date: 2019-05-03 20:42:39	Runs: 10
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 1066
+Funcao Otimizada: <function shubert at 0x7f5f8e999048>
+Gbest Overall: 186.7309
+Positions: [-1.4251051586455006, -0.8003302322642728]
+Mean Peaks Found on Run 0: 1.000000 (18.000000)
+Mean Peaks Found on Run 1: 1.000000 (18.000000)
+Mean Peaks Found on Run 2: 1.000000 (18.000000)
+Mean Peaks Found on Run 3: 1.000000 (18.000000)
+Mean Peaks Found on Run 4: 1.000000 (18.000000)
+Mean Peaks Found on Run 5: 1.000000 (18.000000)
+Mean Peaks Found on Run 6: 1.000000 (18.000000)
+Mean Peaks Found on Run 7: 1.000000 (18.000000)
+Mean Peaks Found on Run 8: 1.000000 (18.000000)
+Mean Peaks Found on Run 9: 1.000000 (18.000000)
+Mean Peaks Found: 1.0000
+Peak Ratio Standard Deviation: 0.0000
+[1.00000, 1.00000, 1.00000, 1.00000, 1.00000, 1.00000, 1.00000, 1.00000, 1.00000, 1.00000, ]
+Success rate: 1.0000
+
+Gbest Average: 186.7300
+Gbest Median: 186.7304 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Gbest Standard Deviation: 0.0014
+
+Elappsed Time Average: 1.6021
+Elappsed Time Standard Deviation: 0.1528
+=================================================================================================================

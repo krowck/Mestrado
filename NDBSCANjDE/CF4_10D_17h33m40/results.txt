@@ -1,0 +1,14 @@
+ID: CF4	Date: 2019-04-29 20:33:40	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 2666
+Funcao Otimizada: <class 'CF4.CF4'>
+Gbest Overall: -0.1991
+Positions: [-0.4980831582612986, -4.01588705133874, -4.8584919290818975, -1.0102101668575616, -3.0326053096717196, 1.7555350421655862, 3.1935742319266316, -2.005323503177334, -3.887651816812028, -3.242588572401877]
+Mean Peaks Found on Run 0: 0.625000 (5.000000)
+Success rate: 0.0000
+
+Gbest Average: -0.1991
+Gbest Median: -0.1991 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 21.0120
+=================================================================================================================

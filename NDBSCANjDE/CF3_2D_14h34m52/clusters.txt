@@ -1,8 +1,0 @@
-Run: 0
-150  Clusters: 68.000000 
-300  Clusters: 66.000000 
-450  Clusters: 69.000000 
-600  Clusters: 69.000000 
-750  Clusters: 66.000000 
-900  Clusters: 65.000000 
-932  Clusters: 61.000000 

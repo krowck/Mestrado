@@ -1,0 +1,14 @@
+ID: CF2	Date: 2019-05-03 17:31:45	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 933
+Funcao Otimizada: <class 'CF2.CF2'>
+Gbest Overall: -0.0000
+Positions: [0.16287933622628156, 3.781509002777151]
+Mean Peaks Found on Run 0: 1.000000 (8.000000)
+Success rate: 1.0000
+
+Gbest Average: -0.0000
+Gbest Median: -0.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 2.2266
+=================================================================================================================

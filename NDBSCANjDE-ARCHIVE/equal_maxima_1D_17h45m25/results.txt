@@ -1,0 +1,24 @@
+ID: equal_maxima	Date: 2019-05-03 20:45:25	Runs: 5
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 266
+Funcao Otimizada: <function equal_maxima at 0x7f2c348f0d90>
+Gbest Overall: 1.0000
+Positions: [0.5]
+Mean Peaks Found on Run 0: 0.800000 (4.000000)
+Mean Peaks Found on Run 1: 1.000000 (5.000000)
+Mean Peaks Found on Run 2: 0.600000 (3.000000)
+Mean Peaks Found on Run 3: 0.600000 (3.000000)
+Mean Peaks Found on Run 4: 0.600000 (3.000000)
+Mean Peaks Found: 0.7200
+Peak Ratio Standard Deviation: 0.1789
+[0.80000, 1.00000, 0.60000, 0.60000, 0.60000, ]
+Success rate: 0.2000
+
+Gbest Average: 1.0000
+Gbest Median: 1.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Gbest Standard Deviation: 0.0000
+
+Elappsed Time Average: 0.6625
+Elappsed Time Standard Deviation: 0.0305
+=================================================================================================================
