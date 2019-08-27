@@ -1,0 +1,14 @@
+ID: vincent	Date: 2019-08-19 19:24:46	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 1333
+Funcao Otimizada: <function vincent at 0x7f2fd00761e0>
+Gbest Overall: 1.0000
+Positions: [4.1112071475736665, 4.111207144742612]
+Mean Peaks Found on Run 0: 0.777778 (28.000000)
+Success rate: 0.0000
+
+Gbest Average: 1.0000
+Gbest Median: 1.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 1.0607
+=================================================================================================================
