@@ -1,0 +1,18 @@
+ID: six_hump_camel_back	Date: 2019-09-16 20:18:22	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 233
+Funcao Otimizada: <function six_hump_camel_back at 0x7f101d15c0d0>
+Gbest Overall: 1.0316
+Niter: 21.3900
+ , Positions: [0.089841630731983, -0.7126561656386946]
+Mean Peaks Found on Run 0: 1.000000 (2.000000)
+Success rate: 1.0000
+
+Gbest Average: 1.0316
+Gbest Median: 1.0316 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 32.1705
+Elappsed Time Hooke-Jeeves: 0.2668
+Elappsed Time Nelder-Mead: 14.1563
+Final Time recorded: 17h19m09
+=================================================================================================================

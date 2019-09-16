@@ -1,0 +1,18 @@
+ID: himmelblau	Date: 2019-09-16 20:18:22	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 233
+Funcao Otimizada: <function himmelblau at 0x7eff29b5c048>
+Gbest Overall: 200.0000
+Niter: 20.8400
+ , Positions: [-3.7794187826756733, -3.2829247196091815]
+Mean Peaks Found on Run 0: 1.000000 (4.000000)
+Success rate: 1.0000
+
+Gbest Average: 200.0000
+Gbest Median: 200.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 30.3013
+Elappsed Time Hooke-Jeeves: 0.3921
+Elappsed Time Nelder-Mead: 10.7658
+Final Time recorded: 17h19m04
+=================================================================================================================

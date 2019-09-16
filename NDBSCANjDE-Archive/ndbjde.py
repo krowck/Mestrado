@@ -47,17 +47,9 @@ def update_progress(progress):
         progress = 1
         status = "... Done!\r\n"
     block = int(round(barLength*progress))
-    text = "\rPercent: [{0}] {1:.0f}% {2}".format( "#"*block + "-"*(barLength-block), progress*100.0, status)
+    text = "\rProgress: [{0}] {1:.0f}% {2}".format( "#"*block + "-"*(barLength-block), progress*100.0, status)
     sys.stdout.write(text)
     sys.stdout.flush()
-
-def r8vec_print ( n, a, title ):
-  print ( '' )
-  print ( title )
-  print ( '' )
-  for i in range ( 0, n ):
-    print ( '%6d:  %12g' % ( i, a[i] ) )
-
 
 
 class DE:
@@ -71,7 +63,6 @@ class DE:
         self.fbest_list = []
         self.nclusters_list = []
         self.full_euclidean = []   
-        self.full_euclidean_aux = []
         self.crossover_rate = [gauss(0.5, 0.1) for i in range(pop_size)]
         self.mutation_rate = [0.5] * pop_size
         self.crossover_rate_T = [gauss(0.5, 0.1) for i in range(pop_size)]
@@ -174,6 +165,13 @@ class DE:
             for d in range(dim):
                 #print(vec[i][d])
                 lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
+            self.pop.append(lp)
+
+        ### OPPOSITION BASED GENERATION
+        for i in range(pop_size):
+            lp = []
+            for d in range(dim):
+                lp.append(lb[d] + ub[d] - self.pop[i][d])
             self.pop.append(lp)
 
         # s = np.random.uniform(0, 1, (pop_size, dim))
@@ -325,7 +323,8 @@ class DE:
             else:
                 candidateSol.append(ind[i])
             #print("antes", candidateSol[i])
-            #candidateSol[i] = self.michalewicz(candidateSol[i], lb[i], ub[i])
+            if uniform(0,1) < 1:
+                candidateSol[i] = self.michalewicz(candidateSol[i], lb[i], ub[i])
             #print("depois", candidateSol[i])
 
 
@@ -425,52 +424,12 @@ class DE:
         dist1 = dist1.tolist()
         return dist1
 
-    def euclidean_distance(self, alvo, k, dim, archive):
-        s = 0
-        dist = []
-        #print(archive)
-        #print(alvo)
-        for i in range(len(archive)):
-            s = 0
-            if k == i:
-                dist.append(math.inf)
-            else:
-                for j in range(dim):
-                    diff = archive[j] - alvo[j]
-                    s += np.sqrt(np.linalg.norm(diff))
-                #dist.append(s)
-        #print(archive)
-        #print("DISTANCIA >>>: ", dist)
-        #sleep(1)
-        #print(s)
-        return s
-
     def euclidean_distance2(self, alvo, dim):
         dist1 = np.zeros((len(self.pop), dim))
         alvo = np.asarray([alvo])
         self.pop = np.asarray(self.pop) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
         dist1 = dist(alvo, self.pop)
         self.pop = self.pop.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
-        dist1 = dist1.tolist()
-        dist1 = dist1.pop()
-        return dist1, dist1.index(min(dist1))
-
-    def euclidean_distance_generic(self, alvo, population, dim):
-        dist1 = np.zeros((len(population), dim))
-        alvo = np.asarray([alvo])
-        population = np.asarray(population) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
-        dist1 = dist(alvo, population)
-        population = population.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
-        dist1 = dist1.tolist()
-        dist1 = dist1.pop()
-        return dist1, dist1.index(min(dist1))
-
-    def euclidean_distance_individual(self, alvo, archive, dim):
-        dist1 = np.zeros((len(archive), dim))
-        alvo = np.asarray([alvo])
-        archive = np.asarray(archive) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
-        dist1 = dist(alvo, archive)
-        archive = archive.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
         dist1 = dist1.tolist()
         dist1 = dist1.pop()
         return dist1, dist1.index(min(dist1))
@@ -496,33 +455,6 @@ class DE:
             for x in temp_aux:
                 self.generateIndividual(x, dim, f)
         self.euclidean_distance_full2(dim)
-
-    def normalize_pop_around_peaks(self, best_individuals, nclusters, popsize, dim, individuals_toReplace, f, fpop):
-        k = 0
-        individuals_per_peak = int(len(individuals_toReplace)/nclusters)
-
-        for i in best_individuals:
-            alpha = 0.05
-            for j in range(0, individuals_per_peak):          
-                self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[j + k], alpha, f)
-                alpha = alpha + 0.05
-                fpop[individuals_toReplace[j + k]] = f.evaluate(self.pop[individuals_toReplace[j + k]]) 
-            k = k + individuals_per_peak
-        for i in best_individuals:
-            if k >= len(individuals_toReplace):
-                break
-            alpha = 0.05
-            self.generateNormalIndividual(self.pop[i], dim, individuals_toReplace[k], alpha, f)
-            k = k + 1
-
-    def generate_individual_neighborhood(self, labels):
-        aux = []
-        indices = []
-        temp = []
-        dist = []
-        alvo = 0
-        indices = [i for i, x in enumerate(labels) if x == -1]
-        aux = sample(indices, k)
 
     def normalized_distance(self, maximum, minimum):
         for i in range(0, len(self.full_euclidean)):
@@ -602,12 +534,13 @@ class DE:
         mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) +'/graphs')
         #to record the results
         results = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/results.txt', 'a')
-        records = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/records.txt', 'a')
+        positions_found = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/seeds.txt', 'a')
+        #records = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/records.txt', 'a')
         clusters = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/clusters.txt', 'a')
         results.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
         results.write('=================================================================================================================\n')
-        records.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
-        records.write('=================================================================================================================\n')
+        #records.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
+        #records.write('=================================================================================================================\n')
         avr_fbest_r = []
         avr_diversity_r = []
         avr_nclusters_r = []
@@ -622,7 +555,6 @@ class DE:
         minimum_in_all_list = 0
         #runs
         for r in range(runs):
-            list_aux = [0] * pop_size
             seconds_nelder_start = 0
             seconds_nelder_end = 0
             seconds_hj_start = 0
@@ -636,10 +568,10 @@ class DE:
             elapTime = []
             archive = []
             fpop_archive = []
-            niter_flag = 100
+            niter_flag = 20
             start = time()
-            records.write('Run: %i\n' % r)
-            records.write('Iter\tGbest\tAvrFit\tDiver\tETime\t\n')
+            #records.write('Run: %i\n' % r)
+            #records.write('Iter\tGbest\tAvrFit\tDiver\tETime\t\n')
             cont_com_append = 0
             cont_sem_append = 0
 
@@ -656,6 +588,22 @@ class DE:
             self.generatePopulation(pop_size, dim, f)
             #fpop = f.evaluate
             fpop = self.evaluatePopulation(self.pop, func, f)
+            #print(fpop)
+            #heapq.nlargest(pop_size, fpop)
+
+            indexes = np.argpartition(fpop, -150)[-150:]
+            #print(indexes, len(indexes))
+            pop_aux4 = []
+            fpop_aux = []
+            for i in range(pop_size):
+                pop_aux4.append(self.pop[indexes[i]])
+                #print(fpop[indexes[i]])
+                fpop_aux.append(fpop[indexes[i]])
+
+            #print(fpop_aux)
+            self.pop = pop_aux4
+            fpop = fpop_aux
+            #print(len(fpop), len(self.pop))
             self.pop_aux2 = self.pop
             
             # X = StandardScaler(with_mean=False).fit_transform(self.pop)
@@ -668,7 +616,7 @@ class DE:
             # # Number of clusters in labels, ignoring noise if present.
             # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
-            #print('Estimated number of clusters: %d' % n_clusters_)
+            # print('Estimated number of clusters: %d' % n_clusters_)
 
             # unique_labels = set(labels)
             # colors = [plt.cm.Spectral(each)
@@ -706,7 +654,9 @@ class DE:
             
             self.normalized_distance(maximum_in_all_list, minimum_in_all_list)
 
-            self.full_euclidean_aux = self.full_euclidean
+            #print(self.full_euclidean )
+
+            #print("MINIIMO E MAXIMO", min(self.full_euclidean), max(self.full_euclidean))
 
             
 
@@ -722,11 +672,8 @@ class DE:
                 fig, ax = plt.subplots()
                 #print("entrou")                
                 sc = ax.scatter(xplot,yplot, s=2)
-                self.contour_plot(xplot, yplot, sc, 0, fig, ax)
+                #self.contour_plot(xplot, yplot, sc, 0, fig, ax)
             avrFit = 9999999
-
-            for i in range(0, pop_size):
-                list_aux[i] = i
 
             #print(max_iterations)
             fpop_old = [0] * pop_size
@@ -740,7 +687,7 @@ class DE:
                     m=math.floor(3+10*((max_iterations-iteration)/max_iterations))
                 else:
                     m=math.floor(3+10*((max_iterations-iteration)/max_iterations))
-                m = 5
+                m = 4
 
                 avrFit = 0.00
 
@@ -783,7 +730,11 @@ class DE:
                     avrFit += fpop[crowding_target]
 
                 
+                # self.pop = []
+                # self.pop.append([0.33301844,0.33301844])
+                # self.pop.append([0.62422843,0.33301844])
 
+                # print(self.pop)
 
 
                 X = StandardScaler(with_mean=False).fit_transform(self.pop)
@@ -809,10 +760,34 @@ class DE:
                 for j in range(n_clusters_):
                     temp[j] = [i for i,x in enumerate(labels) if x==j] 
 
-                #print(n_clusters_)
+                # # Black removed and is used for noise instead.
+                # # Black removed and is used for noise instead.
+                # unique_labels = set(labels)
+                # colors = [plt.cm.Spectral(each)
+                #           for each in np.linspace(0, 1, len(unique_labels))]
+                # for k, col in zip(unique_labels, colors):
+                #     if k == -1:
+                #         # Black used for noise.
+                #         col = [0, 0, 0, 1]
+
+                #     class_member_mask = (labels == k)
+
+                #     xy = X[class_member_mask & core_samples_mask]
+                #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                #              markeredgecolor='k', markersize=14)
+
+                #     xy = X[class_member_mask & ~core_samples_mask]
+                #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                #              markeredgecolor='k', markersize=6)
+
+                # plt.title('Estimated number of clusters: %d' % n_clusters_)
+                # plt.show(block=False)
+                # plt.pause(1)
+                # plt.close()
+                # print(n_clusters_)
                 #print(len(max(temp, key=len)))
                 #print(iteration)       
-                
+                #sleep(100)
 
                 # ------------------------------- START ARCHIVE TECHNIQUE ---------------------------------
 
@@ -839,7 +814,8 @@ class DE:
                 CVF = self.normalized_distance2(CVF)
 
                 for i in range(n_clusters_):
-                    dist_found = math.inf
+                    dist_aux = []
+                    dist_min = math.inf
                     temp_best = -999999
                     indice_best = -1
                     for x in temp[i]:
@@ -848,7 +824,7 @@ class DE:
                             indice_best = x
                         best_individuals[i] = indice_best
 
-                    if niter[i] >= niter_flag:
+                    if niter[i] >= niter_flag and len(temp[i]) > 1:
                         #print("entrou")
                         if (len(archive) == 0):
                            archive.append(self.pop[indice_best])
@@ -857,22 +833,41 @@ class DE:
                            #sleep(10)
                         else:                        
                             for j in archive:
-                                dist_arq = np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)) 
+                                dist_aux.append(np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)))
+                                #dist_arq = np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)) 
                                 #print(self.pop[indice_best], j)
-                                if dist_arq < dist_found:
-                                    dist_found = dist_arq
-                                    #print(dist_found)
+                                #if dist_arq < dist_min:
+                                #    dist_min = dist_arq
+                                    #print(dist_min)
 
-                            if dist_found > 0.1:
-                                #if len(archive) < 400:
-                                #cont_com_append += 1
-                                archive.append(self.pop[indice_best])
-                                fpop_archive.append(fpop[indice_best])
-                                self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
-                                niter[i] = 0
-                                CVF[i] = 0
-                                CVF_old[i] = 99999
-                                niter_flag += 0.5
+                            dist_aux = [(float(i))/(max(dist_aux)) for i in dist_aux]
+                            #print(dist_aux)
+                            #print(min(dist_aux), max(dist_aux))
+                            dist_min = min(dist_aux)
+                            if dist_min > 0.01:                                
+                                if len(archive) >= 500:
+                                    min_value = min(fpop_archive)
+                                    #print(min_value)
+                                    min_index = fpop_archive.index(min_value)
+                                    if(fpop[indice_best] > fpop_archive[min_index]):
+                                        archive[min_index] = self.pop[indice_best]
+                                        fpop_archive[min_index] = fpop[indice_best]
+                                        self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                                        niter[i] = 0
+                                        CVF[i] = 0
+                                        CVF_old[i] = 99999
+                                        niter_flag += 0.01
+
+                                else:                                    
+                                    archive.append(self.pop[indice_best])
+                                    fpop_archive.append(fpop[indice_best])
+                                    self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                                    niter[i] = 0
+                                    CVF[i] = 0
+                                    CVF_old[i] = 99999
+                                    niter_flag += 0.01
+                                    #print(self.pop[indice_best], archive[-1], dist_min)
+
                             else: 
                                 #print("RESETANDO SEM APPEND")
                                 cont_sem_append += 1
@@ -880,7 +875,58 @@ class DE:
                                 niter[i] = 0
                                 CVF[i] = 0
                                 CVF_old[i] = 999999
-                    if len(temp[i]) > 5:
+                    elif niter[i] >= niter_flag + 30 and len(temp[i]) == 1:
+                        #print("entrou")
+                        if (len(archive) == 0):
+                           archive.append(self.pop[indice_best])
+                           fpop_archive.append(fpop[indice_best])
+                           #print(fpop_archive)
+                           #sleep(10)
+                        else:                        
+                            for j in archive:
+                                dist_aux.append(np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)))
+                                #dist_arq = np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)) 
+                                #print(self.pop[indice_best], j)
+                                #if dist_arq < dist_min:
+                                #    dist_min = dist_arq
+                                    #print(dist_min)
+
+                            dist_aux = [(float(i))/(max(dist_aux)) for i in dist_aux]
+                            #print(dist_aux)
+                            #print(min(dist_aux), max(dist_aux))
+                            dist_min = min(dist_aux)
+                            if dist_min > 0.01:                                
+                                if len(archive) >= 400:
+                                    min_value = min(fpop_archive)
+                                    #print(min_value)
+                                    min_index = fpop_archive.index(min_value)
+                                    if(fpop[indice_best] > fpop_archive[min_index]):
+                                        archive[min_index] = self.pop[indice_best]
+                                        fpop_archive[min_index] = fpop[indice_best]
+                                        self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                                        niter[i] = 0
+                                        CVF[i] = 0
+                                        CVF_old[i] = 99999
+                                        niter_flag += 0.01
+
+                                else:                                    
+                                    archive.append(self.pop[indice_best])
+                                    fpop_archive.append(fpop[indice_best])
+                                    self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                                    niter[i] = 0
+                                    CVF[i] = 0
+                                    CVF_old[i] = 99999
+                                    niter_flag += 0.01
+                                    #print(self.pop[indice_best], archive[-1], dist_min)
+
+                            else: 
+                                #print("RESETANDO SEM APPEND")
+                                cont_sem_append += 1
+                                self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                                niter[i] = 0
+                                CVF[i] = 0
+                                CVF_old[i] = 999999
+                    if len(temp[i]) >= 4:
                     #if len(max(temp, key=len)) > 20:
                         #print("entrou", len(max(temp, key=len)))
 
@@ -914,17 +960,17 @@ class DE:
 
                 
                 if dim == 2 and flag_plot == 1:# and (iteration == 0 or iteration == math.floor(max_iterations*0.25) or iteration == math.floor(max_iterations*0.50) or iteration == math.floor(max_iterations * 0.75)):
-                    self.contour_plot(xplot, yplot, sc, iteration, fig, ax)
-                    if iteration == 0:
-                        sleep(7)
-                #     plt.xlim(lb, ub)
-                #     plt.ylim(lb, ub)
+                    #self.contour_plot(xplot, yplot, sc, iteration, fig, ax)
+                    #if iteration == 0:
+                    #   sleep(7)
+                    plt.xlim(lb, ub)
+                    plt.ylim(lb, ub)
 
-                #     plt.draw()                
+                    plt.draw()                
                     
-                #     sc.set_offsets(np.c_[xplot,yplot])
-                #     fig.canvas.draw_idle()
-                #     plt.pause(0.1)
+                    sc.set_offsets(np.c_[xplot,yplot])
+                    fig.canvas.draw_idle()
+                    plt.pause(0.1)
 
 
                 avrFit = avrFit/pop_size
@@ -935,7 +981,7 @@ class DE:
                 
                 self.fbest_list.append(fbest)
                 elapTime.append((time() - start))
-                records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
+                #records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
             #print(len(archive))
             #print(archive)
@@ -993,7 +1039,7 @@ class DE:
             #print(fpop_archive)
             X = StandardScaler(with_mean=False).fit_transform(archive)
 
-            db = DBSCAN(eps=eps_value, min_samples=1).fit(X)
+            db = DBSCAN(eps=0.05, min_samples=1).fit(X)
             core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
             core_samples_mask[db.core_sample_indices_] = True
             labels = db.labels_
@@ -1029,10 +1075,28 @@ class DE:
 
             #itermax = int((f.get_maxfes()*0.3/len(best_individuals))/dim)
             #itermax_archive = int((f.get_maxfes()*0.5/len(archive2))/dim)/2
+            
 
-            itermax_archive = 500
+            
+
+            #print(top_2_idx, top_2_values)
+            #sleep(100)
+
+            
+
+            #print(archive3)
+            #fpop = 
+            #print(self.evaluatePopulation(archive3, func, f))
+            #sleep(100)
+            #print(fpop)
+            #fpop.sort(reverse = True)
+            #print(fpop)
+            
+            #sleep(10)
+
+            itermax_archive = 300
             print("Arquivo sem DBSCAN: ", len(archive), "Arquivo com DBSCAN", len(archive2), (itermax_archive), "niter_flag", niter_flag)
-            rho = 0.75
+            rho = 0.85
             eps = 1.0E-30
 
             # print(itermax)
@@ -1040,31 +1104,6 @@ class DE:
             #print(best_individuals, len(best_individuals))
 
             #LOCAL-SEARCH ROUTINE (HOOKE-JEEVES)
-
-            #archive2 = [[-4.399190784181648, -1.8162558974403198], [-4.97130607209443, -4.06394231411632], [-1.4740581984204002, -5.0], [1.7548796511770928, 3.270465838520437], [2.621372308168648, 3.164828155490121], [-4.272576583939842, 1.8933544754675604], [1.5116683367831103, 0.16521749713350098], [-3.2374618582509833, 4.347676590541841], [-1.24375834336125, -1.9787273258726765], [-4.1590891177609315, 4.704064775690078], [-3.8888446744172427, 0.23894133592658115], [-0.48180657571474145, 3.1312094061740874], [-1.8645615075821151, 1.5888651909998153], [-4.88590820852977, -1.5728224115509128], [-0.2261949155224555, -1.9221199812901577], [0.10628118549022701, -4.310131193793298], [-0.1828658795002683, -3.425153868264696], [-3.6315030443549743, 3.3894131392722726], [3.3467932564126492, 0.7748079800085809], [-1.3442019135581191, 0.28060983147917273], [1.2666601666254156, -0.5679049097289061], [3.1713587913058, -0.8289719115563059], [2.1857602971948884, -0.7845133256331318], [-4.9380167044558405, 0.32978561817462604], [-1.5180943120446226, 0.6809985639909175], [-1.394518294122572, 3.5272537548560274], [-2.4559882816020457, -1.4370969184306344], [2.5672933037649472, -3.275445244390521], [0.8328658391134949, 3.66046460459078], [-4.944166265463501, 2.8649560750903325], [-1.3651279652006982, -1.203991574947801], [-3.802724616535142, 1.2989607997275705], [1.850383889291473, -2.2164696704800306], [-4.977553295848615, -2.5588208016645857], [-3.3684012518124535, 1.4580262506914385], [2.4556902117858646, -2.480457698698939], [-2.2802838293726384, 0.6366376625513164], [0.08039050579866709, 2.8640158144779337], [-3.1825534527714407, 1.0242966357920438], [2.6823119734654877, 2.0374492725518403], [-4.927760446203599, -0.4042500736128154], [-2.798171208702864, 1.950220127769502], [0.9716927346610851, -2.5100432688795875], [-2.946838127624515, 5.0], [-2.9580560447269844, -4.494175194597774], [-1.2000001947103667, -0.07651765788002951], [-0.9550131647129071, 1.162328388776517], [-3.8832236706413257, -2.2966074148979794], [-3.1089459873634375, 2.07939717409105], [3.698915622374114, -1.6805212598759909], [0.6618052423701224, -1.6215614419095346], [2.436172887984423, -1.0037003171338739], [-1.1529020638937737, -0.928181401027577], [-2.9695857332621833, -0.15217921599606649], [-0.9142226015477395, -3.8109609522742534], [4.07788729878062, 4.508656611629853], [-4.025768304531081, 2.4723706660199176], [-4.38000660579726, -2.8499188944236105], [-3.2278428624799615, -0.7558350993266506], [1.9816737368777426, -3.4815066761009237], [-4.858317323980683, 3.915257712647175], [-0.5353368302830852, -1.1956051429317611], [-2.046549403831175, -0.5374627396960644], [-0.6068488727828674, 0.2884131067611335], [-0.8659910413378064, 2.213518003249555], [-4.811825831056202, 0.6333170117993305], [-1.619874003191928, -3.248609123374787], [-1.3901930484014495, -4.3122305057996515], [1.7577435814843456, 0.4742590402492852], [-1.2648661983665166, 1.2954448008775017], [4.017752238179063, -1.7928859136623616], [3.467070043952051, 2.54111971396697], [4.447169400148064, -1.9598099097166648], [-4.38996014729009, -4.337791907836462], [4.5687013126061995, -2.749878653019339], [3.28605535633503, -0.12983703983132777], [-4.719437267747506, 1.681122576159829], [-3.7721755549488636, -4.646671649403606], [-4.11082663814106, 1.421477095210701], [3.3077034443064974, -3.8030076987745867], [-2.1045263032270984, -2.737991876938009], [1.8489330127149814, -0.6890158766542518], [1.6644128459951992, 4.747004433972307], [2.2523994748480853, 1.5957372548098387], [-3.3625747531753727, -1.0732306605171962], [-4.416965605199391, 1.5522140595584186], [-1.5714076478057424, 1.4256209041590366], [0.532405080346157, -4.999890956238866], [-2.4471794237606495, 1.0726241912495809], [-0.7943395225736444, -4.617061680300663], [0.05550535218314681, 4.358367601445294], [4.845898226307823, -0.46938735238848095], [-5.0, 4.704064775690078], [3.1027139256129668, -4.225318363834675], [4.845898226307823, -2.1598679279092083], [-3.7394662336015108, -1.8832138546538928], [-3.172498126659006, -4.937944809454775], [-0.7370259860228117, -0.017762651879935358], [-0.022335422145522976, 1.165666395361419], [-0.3445576225088886, 0.901886614917351], [-4.878715523932023, 5.0], [-5.0, 1.8823131887911497], [3.6809957297030276, -4.560349337145268], [4.265104024722111, -3.363311109697913], [-3.3951130126263944, -3.3173071873779736], [-4.421697374954198, 4.087696873370499], [-4.682544178616501, 3.4774623712294526], [1.290144607018575, -1.9161567101719594], [-2.805639702801412, 3.0153305042407745], [-3.4969545551858503, 1.1600213497395746], [-4.81330889547183, 3.1709116242631885], [-2.661931846276306, -0.2800527818830636], [-1.5615446962987858, 4.400020663355298], [0.18166524373700627, -2.613976586656517], [3.0461363838034714, -1.2878428291709463], [2.1730687223682352, -3.0877113325194063], [1.5765814716741218, -2.7895022094916553], [-2.297840217588068, -3.137022396823691], [1.7577435771369871, 1.5957372548045494], [-3.250262347287506, 3.981628266322061], [-1.7938526412663895, 2.6030687080499035], [3.9721478155308962, -3.960969203782872], [-2.1848893345532767, 1.687021211368902], [-0.49961922386929725, -4.012619156265195], [4.141256918608512, 2.038313784714212], [0.6997853176851706, -4.594949360187749], [1.5906232441495716, -4.286693745077206], [-1.6587416454183253, 0.37488490462840945], [-2.5773446865852083, 0.7673000163994514], [-4.281493547348879, -0.6784097624105104], [1.3000714271471336, -4.8862827792924355], [-4.551762932852439, 3.7839465056478643], [0.3741653674902719, -2.213971329732687], [1.3684878429876344, 1.5957372548045494], [3.014317667006319, -0.2834923636179691], [-1.6502398251945016, -1.8038480588329817], [4.141256918608512, 2.477011811037782], [3.0536689562915975, -2.7749298000873233], [0.2303931733112271, 2.1099886902196228], [2.53202323643381, 4.825141495726529], [-3.8942099921189754, 2.7779970808094436], [2.1388455967095785, -4.514872031073448], [-2.2022905680767577, 4.687720064377247], [-4.290454019025498, 4.396713969792819], [2.8159227083712706, -4.873610837696039], [-3.9281753317487023, -0.10362181511649587]]
-                        #[-2.1849843511337519, 1.6870539388189698]
-            #archive2 =  [[-2.184984287994826,  1.687053876764728]]
-                        #[-2.1849843511337523, 1.6870539388189703]
-                        #[-2.184984287994826,  1.687053876764728]
-                        #[-2.1849843521397636, 1.687053936459804]
-            #archive2 = [[-0.49969506538258013, -4.0125970848020875]]
-                        #[-0.49969506538256958, -4.0125970848019490]
-            #archive2 = [[-0.49969513504451857, -4.012597050969996]]
-                            #[-0.49969506538256914, -4.01259708480195]
-                            #[-0.49969506538256958, -4.0125970848019490]
-
-            #archive2 = [[-0.49968798513322815, -4.0125684842053495]]
-            #archive2.append([-2.184972206978734, 1.68643120056627])
-            #print(f.evaluate(archive2[0]))
-            #print("ANTES DE TUDO", archive2)
-
-            #archive2 = []
-            #archive2.append([-0.4998629111178183, -4.012953903305015])
-            #archive2.append([-2.1962545618733444, 1.6937516005176196])
-            #archive2.append([-0.49958565012365774, -4.012563892056049])
-            #print(archive2)
-            #sleep(100)
-
             if archive_flag == 0:
                 for ind in best_individuals:
                     it, endpt = hooke(dim, self.pop[ind], rho, eps, itermax_archive, f)                
@@ -1076,18 +1115,32 @@ class DE:
                 #print("DEPOIS DO HOOKE JEEVES ", archive2)
                 seconds_nelder_start = time()
                 for ind in range(0,len(archive2)):
+                    ### NELDER MEAD           
+                    #print("Antes: ", f.evaluate(archive2[ind]))         
+                    it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.2)
+                    archive2[ind] = it.tolist()
+                    #print("Nelder Mead: ", f.evaluate(archive2[ind]))
+                
+                for ind in range(0,len(archive2)):
                     ### NELDER MEAD                    
-                    it, endpt = nelder_mead(f, archive2[ind], itermax_archive)
+                    it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.7)
                     archive2[ind] = it.tolist()
                     #print("Nelder Mead: ", archive2[ind] )
                 seconds_nelder_end = time()
 
+                fpop = self.evaluatePopulation(archive2, func, f)
+
+                top_2_idx = np.argsort(fpop)[-40:]
+
+                #print(top_2_idx, archive3)
                 seconds_hj_start = time()
-                for ind in range(0,len(archive2)):
-                    ### HOOKE JEEVES
-                    it, endpt = hooke(dim, archive2[ind], rho, eps, itermax_archive, f) 
-                    print(it)
+                for ind in top_2_idx:
+                    ## HOOKE JEEVES
+                    #print("Antes:", f.evaluate(archive2[ind]))
+                    it, endpt = hooke(dim, archive2[ind], rho, eps, 200, f) 
+                    #print(it)
                     archive2[ind] = endpt
+                    #print("Hooke-Jeeves", f.evaluate(archive2[ind]))
                 seconds_hj_end = time()
                 #print(archive2)
                     
@@ -1101,10 +1154,11 @@ class DE:
             #print("DEPOIS DE TUDO", archive2)
             #archive2.append([-2.1849843511337519, 1.6870539388189698])
 
-            fpop = self.evaluatePopulation(archive2, func, f)
+            #fpop = self.evaluatePopulation(archive3, func, f)
+            #print(fpop)
 
 
-            records.write('Pos: %s\n\n' % str(best))
+            #records.write('Pos: %s\n\n' % str(best))
             fbest_r.append(fbest)
             best_r.append(best)
             elapTime_r.append(elapTime[max_iterations-1])
@@ -1145,11 +1199,12 @@ class DE:
         diversityAux = [sum(x)/len(x) for x in zip(*avr_diversity_r)]
         nclustersAux = [sum(x)/len(x) for x in zip(*avr_nclusters_r)]
         self.generateGraphs(fbestAux, diversityAux, max_iterations, funcs[nfunc], 'Overall', dim, hora, nclustersAux)
-        records.write('=================================================================================================================')
+        #records.write('=================================================================================================================')
         if maximize==False:
             results.write('Gbest Overall: %.4f\n' % (min(fbest_r)))
             results.write('Positions: %s\n\n' % str(best_r[fbest_r.index(min(fbest_r))]))
         else:
+            #positions_found.write(seeds)
             results.write('Tamanho da populacao: %d\n' % pop_size)
             results.write('Iteracoes Maximas: %d\n' % max_iterations)
             results.write('Funcao Otimizada: %s\n' % func)
