@@ -1,0 +1,54 @@
+ID: equal_maxima	Date: 2019-09-19 15:13:52	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 233
+Funcao Otimizada: <function equal_maxima at 0x7f5c234bdf28>
+Gbest Overall: 1.0000
+Niter: 20.0000
+ , Positions: [0.5]
+Mean Peaks Found on Run 0: 1.000000 (5.000000)
+Success rate: 1.0000
+
+Gbest Average: 1.0000
+Gbest Median: 1.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 92.2608
+Elappsed Time Hooke-Jeeves: 0.1661
+Elappsed Time Nelder-Mead: 1.7918
+Final Time recorded: 12h15m28
+=================================================================================================================
+ID: equal_maxima	Date: 2019-09-19 15:13:52	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 233
+Funcao Otimizada: <function equal_maxima at 0x7fe85c954f28>
+Gbest Overall: 1.0000
+Niter: 20.0000
+ , Positions: [0.5]
+Mean Peaks Found on Run 0: 1.000000 (5.000000)
+Success rate: 1.0000
+
+Gbest Average: 1.0000
+Gbest Median: 1.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 93.2897
+Elappsed Time Hooke-Jeeves: 0.1410
+Elappsed Time Nelder-Mead: 2.0011
+Final Time recorded: 12h15m29
+=================================================================================================================
+ID: equal_maxima	Date: 2019-09-19 15:13:52	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 233
+Funcao Otimizada: <function equal_maxima at 0x7f4fe281cf28>
+Gbest Overall: 1.0000
+Niter: 20.0000
+ , Positions: [0.5]
+Mean Peaks Found on Run 0: 1.000000 (5.000000)
+Success rate: 1.0000
+
+Gbest Average: 1.0000
+Gbest Median: 1.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 94.9920
+Elappsed Time Hooke-Jeeves: 0.1651
+Elappsed Time Nelder-Mead: 2.0393
+Final Time recorded: 12h15m31
+=================================================================================================================

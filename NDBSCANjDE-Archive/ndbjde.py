@@ -24,6 +24,8 @@ from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics.pairwise import euclidean_distances
 from heapq import nlargest
+import os
+
 
 
 import uuid
@@ -530,13 +532,28 @@ class DE:
         PR = [] #PEAK RATIO
         SR = 0.0
         hora = strftime("%Hh%Mm%S", localtime())
-        mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora))
-        mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) +'/graphs')
-        #to record the results
-        results = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/results.txt', 'a')
-        positions_found = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/seeds.txt', 'a')
-        #records = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/records.txt', 'a')
-        clusters = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/clusters.txt', 'a')
+        fileName_function = str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora)
+
+        path = ("/home/gabriel/Área de Trabalho/Mestrado/NDBSCANjDE-Archive/" + fileName_function)
+
+        if os.path.exists(path):
+            #to record the results
+            results = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/results.txt', 'a')
+            positions_found = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/seeds.txt', 'a')
+            #records = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/records.txt', 'a')
+            clusters = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/clusters.txt', 'a')            
+        else:
+            mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora))
+            mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) +'/graphs')
+            #to record the results
+            results = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/results.txt', 'a')
+            positions_found = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/seeds.txt', 'a')
+            #records = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/records.txt', 'a')
+            clusters = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/clusters.txt', 'a')
+
+
+
+        
         results.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
         results.write('=================================================================================================================\n')
         #records.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
@@ -553,8 +570,19 @@ class DE:
         porcentagem = 0
         maximum_in_all_list = 0
         minimum_in_all_list = 0
+        #print(fileName_function)
+
+        #
+
+
+        #print(path)
+
         #runs
         for r in range(runs):
+
+             
+                
+
             seconds_nelder_start = 0
             seconds_nelder_end = 0
             seconds_hj_start = 0
@@ -1095,7 +1123,7 @@ class DE:
             #sleep(10)
 
             itermax_archive = 300
-            print("Arquivo sem DBSCAN: ", len(archive), "Arquivo com DBSCAN", len(archive2), (itermax_archive), "niter_flag", niter_flag)
+            #print("Arquivo sem DBSCAN: ", len(archive), "Arquivo com DBSCAN", len(archive2), (itermax_archive), "niter_flag", niter_flag)
             rho = 0.85
             eps = 1.0E-30
 
@@ -1191,7 +1219,7 @@ class DE:
             self.nclusters_list = []
 
             PR.append(count_global/f.get_no_goptima())
-            print("Peak Ratio: %.4f" % PR[r])
+            #print("Peak Ratio: %.4f" % PR[r])
             if(PR[r] == 1):
                 SR += 1
         hora_final = strftime("%Hh%Mm%S", localtime())
