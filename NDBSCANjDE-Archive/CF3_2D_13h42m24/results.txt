@@ -1,0 +1,28 @@
+ID: CF3	Date: 2019-09-23 16:42:24	Runs: 5
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 933
+Funcao Otimizada: <class 'CF3.CF3'>
+Gbest Overall: 0.0000
+Niter: 20.9000
+ , Positions: [1.7577435885101347, 1.5957372691954073]
+Mean Peaks Found on Run 0: 1.000000 (6.000000)
+Mean Peaks Found on Run 1: 1.000000 (6.000000)
+Mean Peaks Found on Run 2: 1.000000 (6.000000)
+Mean Peaks Found on Run 3: 1.000000 (6.000000)
+Mean Peaks Found on Run 4: 1.000000 (6.000000)
+Mean Peaks Found: 1.0000
+Peak Ratio Standard Deviation: 0.0000
+[1.00000, 1.00000, 1.00000, 1.00000, 1.00000, ]
+Success rate: 1.0000
+
+Gbest Average: -0.0000
+Gbest Median: -0.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Gbest Standard Deviation: 0.0000
+
+Elappsed Time Average: 135.2209
+Elappsed Time Hooke-Jeeves: 18.0362
+Elappsed Time Nelder-Mead: 187.1977
+Final Time recorded: 14h10m23
+Elappsed Time Standard Deviation: 7.3696
+=================================================================================================================

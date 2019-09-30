@@ -7,7 +7,7 @@ import copy
 import sys
 import sobol_seq
 import argparse
-from nelder import *
+from nelder_purepython import *
 from anneal import *
 from hj import *
 from statistics import median, stdev
@@ -169,12 +169,12 @@ class DE:
                 lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
             self.pop.append(lp)
 
-        ### OPPOSITION BASED GENERATION
-        for i in range(pop_size):
-            lp = []
-            for d in range(dim):
-                lp.append(lb[d] + ub[d] - self.pop[i][d])
-            self.pop.append(lp)
+        # ### OPPOSITION BASED GENERATION
+        # for i in range(pop_size):
+        #     lp = []
+        #     for d in range(dim):
+        #         lp.append(lb[d] + ub[d] - self.pop[i][d])
+        #     self.pop.append(lp)
 
         # s = np.random.uniform(0, 1, (pop_size, dim))
 
@@ -325,7 +325,7 @@ class DE:
             else:
                 candidateSol.append(ind[i])
             #print("antes", candidateSol[i])
-            if uniform(0,1) < 1:
+            if uniform(0,1) < 0.2:
                 candidateSol[i] = self.michalewicz(candidateSol[i], lb[i], ub[i])
             #print("depois", candidateSol[i])
 
@@ -526,7 +526,7 @@ class DE:
 
         crowding_target = 0
         neighborhood_list = []
-        funcs = ["haha", "five_uneven_peak_trap", "equal_maxima", "uneven_decreasing_maxima", "himmelblau", "six_hump_camel_back", "shubert", "vincent", "shubert", "vincent", "modified_rastrigin_all", "CF1", "CF2", "CF3", "CF3", "CF4", "CF3", "CF4", "CF3", "CF4", "CF4"]
+        funcs = ["haha", "five_uneven_peak_trap", "equal_maxima", "uneven_decreasing_maxima", "himmelblau", "six_hump_camel_back", "shubert", "vincent", "shubert", "vincent", "modified_rastrigin_all", "CF1", "CF2", "CF3", "CF3", "CF4", "CF3", "CF4", "CF3", "CF4", "CF4", "protein"]
         #print(">>>>>>>>>>", str(funcs[1]))
         m = 0
         PR = [] #PEAK RATIO
@@ -579,10 +579,6 @@ class DE:
 
         #runs
         for r in range(runs):
-
-             
-                
-
             seconds_nelder_start = 0
             seconds_nelder_end = 0
             seconds_hj_start = 0
@@ -616,21 +612,19 @@ class DE:
             self.generatePopulation(pop_size, dim, f)
             #fpop = f.evaluate
             fpop = self.evaluatePopulation(self.pop, func, f)
-            #print(fpop)
-            #heapq.nlargest(pop_size, fpop)
+            ### Generate initial population with opposition based algorithm
+            # indexes = np.argpartition(fpop, -150)[-150:]
+            # #print(indexes, len(indexes))
+            # pop_aux4 = []
+            # fpop_aux = []
+            # for i in range(pop_size):
+            #     pop_aux4.append(self.pop[indexes[i]])
+            #     #print(fpop[indexes[i]])
+            #     fpop_aux.append(fpop[indexes[i]])
 
-            indexes = np.argpartition(fpop, -150)[-150:]
-            #print(indexes, len(indexes))
-            pop_aux4 = []
-            fpop_aux = []
-            for i in range(pop_size):
-                pop_aux4.append(self.pop[indexes[i]])
-                #print(fpop[indexes[i]])
-                fpop_aux.append(fpop[indexes[i]])
-
-            #print(fpop_aux)
-            self.pop = pop_aux4
-            fpop = fpop_aux
+            # #print(fpop_aux)
+            # self.pop = pop_aux4
+            # fpop = fpop_aux
             #print(len(fpop), len(self.pop))
             self.pop_aux2 = self.pop
             
@@ -873,7 +867,7 @@ class DE:
                             #print(min(dist_aux), max(dist_aux))
                             dist_min = min(dist_aux)
                             if dist_min > 0.01:                                
-                                if len(archive) >= 500:
+                                if len(archive) >= 300:
                                     min_value = min(fpop_archive)
                                     #print(min_value)
                                     min_index = fpop_archive.index(min_value)
@@ -903,57 +897,57 @@ class DE:
                                 niter[i] = 0
                                 CVF[i] = 0
                                 CVF_old[i] = 999999
-                    elif niter[i] >= niter_flag + 30 and len(temp[i]) == 1:
-                        #print("entrou")
-                        if (len(archive) == 0):
-                           archive.append(self.pop[indice_best])
-                           fpop_archive.append(fpop[indice_best])
-                           #print(fpop_archive)
-                           #sleep(10)
-                        else:                        
-                            for j in archive:
-                                dist_aux.append(np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)))
-                                #dist_arq = np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)) 
-                                #print(self.pop[indice_best], j)
-                                #if dist_arq < dist_min:
-                                #    dist_min = dist_arq
-                                    #print(dist_min)
+                    # elif niter[i] >= niter_flag + 30 and len(temp[i]) == 1:
+                    #     #print("entrou")
+                    #     if (len(archive) == 0):
+                    #        archive.append(self.pop[indice_best])
+                    #        fpop_archive.append(fpop[indice_best])
+                    #        #print(fpop_archive)
+                    #        #sleep(10)
+                    #     else:                        
+                    #         for j in archive:
+                    #             dist_aux.append(np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)))
+                    #             #dist_arq = np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)) 
+                    #             #print(self.pop[indice_best], j)
+                    #             #if dist_arq < dist_min:
+                    #             #    dist_min = dist_arq
+                    #                 #print(dist_min)
 
-                            dist_aux = [(float(i))/(max(dist_aux)) for i in dist_aux]
-                            #print(dist_aux)
-                            #print(min(dist_aux), max(dist_aux))
-                            dist_min = min(dist_aux)
-                            if dist_min > 0.01:                                
-                                if len(archive) >= 400:
-                                    min_value = min(fpop_archive)
-                                    #print(min_value)
-                                    min_index = fpop_archive.index(min_value)
-                                    if(fpop[indice_best] > fpop_archive[min_index]):
-                                        archive[min_index] = self.pop[indice_best]
-                                        fpop_archive[min_index] = fpop[indice_best]
-                                        self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
-                                        niter[i] = 0
-                                        CVF[i] = 0
-                                        CVF_old[i] = 99999
-                                        niter_flag += 0.01
+                    #         dist_aux = [(float(i))/(max(dist_aux)) for i in dist_aux]
+                    #         #print(dist_aux)
+                    #         #print(min(dist_aux), max(dist_aux))
+                    #         dist_min = min(dist_aux)
+                    #         if dist_min > 0.01:                                
+                    #             if len(archive) >= 400:
+                    #                 min_value = min(fpop_archive)
+                    #                 #print(min_value)
+                    #                 min_index = fpop_archive.index(min_value)
+                    #                 if(fpop[indice_best] > fpop_archive[min_index]):
+                    #                     archive[min_index] = self.pop[indice_best]
+                    #                     fpop_archive[min_index] = fpop[indice_best]
+                    #                     self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                    #                     niter[i] = 0
+                    #                     CVF[i] = 0
+                    #                     CVF_old[i] = 99999
+                    #                     niter_flag += 0.01
 
-                                else:                                    
-                                    archive.append(self.pop[indice_best])
-                                    fpop_archive.append(fpop[indice_best])
-                                    self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
-                                    niter[i] = 0
-                                    CVF[i] = 0
-                                    CVF_old[i] = 99999
-                                    niter_flag += 0.01
-                                    #print(self.pop[indice_best], archive[-1], dist_min)
+                    #             else:                                    
+                    #                 archive.append(self.pop[indice_best])
+                    #                 fpop_archive.append(fpop[indice_best])
+                    #                 self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                    #                 niter[i] = 0
+                    #                 CVF[i] = 0
+                    #                 CVF_old[i] = 99999
+                    #                 niter_flag += 0.01
+                    #                 #print(self.pop[indice_best], archive[-1], dist_min)
 
-                            else: 
-                                #print("RESETANDO SEM APPEND")
-                                cont_sem_append += 1
-                                self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
-                                niter[i] = 0
-                                CVF[i] = 0
-                                CVF_old[i] = 999999
+                    #         else: 
+                    #             #print("RESETANDO SEM APPEND")
+                    #             cont_sem_append += 1
+                    #             self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                    #             niter[i] = 0
+                    #             CVF[i] = 0
+                    #             CVF_old[i] = 999999
                     if len(temp[i]) >= 4:
                     #if len(max(temp, key=len)) > 20:
                         #print("entrou", len(max(temp, key=len)))
@@ -1009,6 +1003,7 @@ class DE:
                 
                 self.fbest_list.append(fbest)
                 elapTime.append((time() - start))
+                print(fbest)
                 #records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
             #print(len(archive))
@@ -1122,7 +1117,7 @@ class DE:
             
             #sleep(10)
 
-            itermax_archive = 300
+            itermax_archive = 500
             #print("Arquivo sem DBSCAN: ", len(archive), "Arquivo com DBSCAN", len(archive2), (itermax_archive), "niter_flag", niter_flag)
             rho = 0.85
             eps = 1.0E-30
@@ -1158,14 +1153,14 @@ class DE:
 
                 fpop = self.evaluatePopulation(archive2, func, f)
 
-                top_2_idx = np.argsort(fpop)[-40:]
+                top_2_idx = np.argsort(fpop)[-50:]
 
                 #print(top_2_idx, archive3)
                 seconds_hj_start = time()
                 for ind in top_2_idx:
                     ## HOOKE JEEVES
                     #print("Antes:", f.evaluate(archive2[ind]))
-                    it, endpt = hooke(dim, archive2[ind], rho, eps, 200, f) 
+                    it, endpt = hooke(dim, archive2[ind], rho, eps, 300, f) 
                     #print(it)
                     archive2[ind] = endpt
                     #print("Hooke-Jeeves", f.evaluate(archive2[ind]))
@@ -1275,7 +1270,7 @@ class DE:
 
 if __name__ == '__main__': 
     from ndbjde import DE
-    funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4]
+    funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4, protein]
     #nfunc = 1
     parser = argparse.ArgumentParser()
 
