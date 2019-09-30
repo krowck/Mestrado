@@ -1003,7 +1003,7 @@ class DE:
                 
                 self.fbest_list.append(fbest)
                 elapTime.append((time() - start))
-                print(fbest)
+                #print(fbest)
                 #records.write('%i\t%.4f\t%.4f\t%.4f\t%.4f\n' % (iteration, round(fbest,4), round(avrFit,4), round(self.diversity[iteration],4), elapTime[iteration]))
 
             #print(len(archive))
