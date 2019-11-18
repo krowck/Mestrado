@@ -143,23 +143,14 @@ class DE:
         fig.canvas.draw_idle() 
         plt.savefig('figure_' + str(iteration))
         plt.pause(0.0001)
-
-    #fitness_function
-    def fitness(self, individual):
-        'to override'
-        'rastrigin' 
-        result = 0.00
-        for dim in individual:
-            result += (dim - 1)**2 - 10 * math.cos(2 * math.pi * (dim - 1))
-        return (10*len(individual) + result)
    
     def generatePopulation(self, pop_size, dim, f): 
         ub = [0] * dim
         lb = [0] * dim
+
         for k in range(dim):
             ub[k] = f.get_ubound(k)
             lb[k] = f.get_lbound(k)
-
         vec = sobol_seq.i4_sobol_generate(dim, pop_size)
         
         for i in range(pop_size):
@@ -329,11 +320,6 @@ class DE:
                 candidateSol[i] = self.michalewicz(candidateSol[i], lb[i], ub[i])
             #print("depois", candidateSol[i])
 
-
-
-
-        #self.michalewicz(candidateSol, )
-
         return candidateSol
 
     def rand_2_bin(self, ind, alvo, dim, wf, cr, neighborhood_list, m):
@@ -405,10 +391,10 @@ class DE:
             lb[k] = f.get_lbound(k)
 
         for d in range(len(ind)):
-            if ind[d] <= lb[k]:
-                ind[d] = lb[k] 
-            if ind[d] >= ub[k]:
-                ind[d] = ub[k] 
+            if ind[d] <= lb[d]:
+                ind[d] = lb[d] 
+            if ind[d] >= ub[d]:
+                ind[d] = ub[d] 
 
     def euclidean_distance_full2(self, dim):
         dist1 = np.zeros((len(self.pop), dim))
