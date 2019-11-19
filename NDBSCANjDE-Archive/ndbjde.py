@@ -26,11 +26,6 @@ from sklearn.metrics.pairwise import euclidean_distances
 from heapq import nlargest
 import os
 
-
-
-import uuid
-#import cProfile
-
 def equal_maxima(x):
     return np.sin(5.0 * np.pi * x[0])**6
 
@@ -58,8 +53,6 @@ class DE:
 
     def __init__(self, pop_size):
         self.pop = [] #population's positions
-        self.pop_gg = []
-        self.pop_aux2 = []       
         self.m_nmdf = 0.00 #diversity variable
         self.diversity = []
         self.fbest_list = []
@@ -195,20 +188,20 @@ class DE:
             lp.append(uniform(lb[d],ub[d]))
         self.pop[alvo] = lp
 
-    def generateNormalIndividual(self, best, dim, alvo, alpha, f):
-        ub = [0] * dim
-        lb = [0] * dim
-        for k in range(dim):
-            ub[k] = f.get_ubound(k)
-            lb[k] = f.get_lbound(k)
-        lp = []
-        for d in range(dim):
-            lp.append(np.random.normal(best[d], alpha))
-            if lp[d] >= ub[d]:
-                lp[d] = ub[d]
-            elif lp[d] <= lb[d]:
-                lp[d] = lb[d]
-        self.pop[alvo] = lp
+    # def generateNormalIndividual(self, best, dim, alvo, alpha, f):
+    #     ub = [0] * dim
+    #     lb = [0] * dim
+    #     for k in range(dim):
+    #         ub[k] = f.get_ubound(k)
+    #         lb[k] = f.get_lbound(k)
+    #     lp = []
+    #     for d in range(dim):
+    #         lp.append(np.random.normal(best[d], alpha))
+    #         if lp[d] >= ub[d]:
+    #             lp[d] = ub[d]
+    #         elif lp[d] <= lb[d]:
+    #             lp[d] = lb[d]
+    #     self.pop[alvo] = lp
 
     def evaluatePopulation(self, pop, func, f):
         fpop = []
@@ -216,10 +209,11 @@ class DE:
             fpop.append(f.evaluate(ind))
         return fpop
 
-    def evaluateIndividual(self, ind, func, f):
-        find = 0
-        find = f.evaluate(ind)
-        return find
+    # def evaluateIndividual(self, ind, func, f):
+    #     find = 0
+    #     find = f.evaluate(ind)
+    #     return find
+
     def getBestSolution(self, maximize, fpop):
         fbest = fpop[0]
         best = [values for values in self.pop[0]]
@@ -246,7 +240,6 @@ class DE:
     def generateNewIndividualsFromSubPopulation(self, subpop, dim, f):
         ub = [0] * dim
         lb = [0] * dim
-        #rint(subpop)
         for k in range(dim):
             ub[k] = f.get_ubound(k)
             lb[k] = f.get_lbound(k)
@@ -256,7 +249,6 @@ class DE:
             for d in range(dim):
 
                 lp.append(uniform(lb[d],ub[d]))
-            #print(lp)
             self.pop[i] = lp
 
 
@@ -270,32 +262,23 @@ class DE:
             ub[k] = f.get_ubound(k)
             lb[k] = f.get_lbound(k)
 
-        #print(len(subpop))
-
         fsubpop = []
-
         for i in subpop:
             fsubpop.append(fpop[i])
         
         subpop_better = nlargest(5, enumerate(fsubpop), key=lambda x:x[1])
-        #print(subpop_better)
         subpop_better.sort(key=self.takeSecond, reverse=True)
-        #print(subpop_better)
 
         for i in subpop_better:
-            #print(i[0])
             subpop.pop(i[0])
 
         for i in subpop:
             lp = []
             for d in range(dim):
                 lp.append(uniform(lb[d],ub[d]))
-            #print(lp)
-            self.pop[i] = lp        
-
+            self.pop[i] = lp
 
     def rand_1_bin(self, ind, alvo, dim, wf, cr, neighborhood_list, m, f):
-        vec_candidates = []
         ub = [0] * dim
         lb = [0] * dim
 
@@ -315,10 +298,8 @@ class DE:
                 candidateSol.append(p3[i]+wf*(p1[i]-p2[i])) # -> rand(p3) , vetor diferença (wf*(p1[i]-p2[i]))i
             else:
                 candidateSol.append(ind[i])
-            #print("antes", candidateSol[i])
             if uniform(0,1) < 0.2:
                 candidateSol[i] = self.michalewicz(candidateSol[i], lb[i], ub[i])
-            #print("depois", candidateSol[i])
 
         return candidateSol
 
@@ -338,7 +319,6 @@ class DE:
         for i in range(dim):
             if(i == cutpoint or uniform(0,1) < cr):
                 candidateSol.append(p5[i] + wf*(p1[i] - p2[i]) + wf*(p3[i] - p4[i]))
-                #candidateSol.append(ind[i]+wf*(best[i]-ind[i])+wf*(p1[i]-p2[i])) # -> rand(p3) , vetor diferença (wf*(p1[i]-p2[i]))
             else:
                 candidateSol.append(ind[i])
 
@@ -404,13 +384,13 @@ class DE:
         dist1 = dist1.tolist()
         self.full_euclidean.append(dist1)
 
-    def euclidean_distance_full3(self, dim, alvo):
-        dist1 = np.zeros((len(alvo), dim))
-        alvo = np.asarray(alvo) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
-        dist1 = dist(alvo, alvo)
-        alvo = alvo.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
-        dist1 = dist1.tolist()
-        return dist1
+    # def euclidean_distance_full3(self, dim, alvo):
+    #     dist1 = np.zeros((len(alvo), dim))
+    #     alvo = np.asarray(alvo) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
+    #     dist1 = dist(alvo, alvo)
+    #     alvo = alvo.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
+    #     dist1 = dist1.tolist()
+    #     return dist1
 
     def euclidean_distance2(self, alvo, dim):
         dist1 = np.zeros((len(self.pop), dim))
@@ -449,14 +429,6 @@ class DE:
             for j in range(0, len(self.full_euclidean[i])):
                 self.full_euclidean[i][j] = (self.full_euclidean[i][j] - minimum) / (maximum-minimum)
 
-    def normalized_distance3(self, alvo):
-        maximum = max([max(p) for p in alvo])
-        minimum = min([min(p) for p in alvo])
-        for i in range(0, len(alvo)):
-            for j in range(0, len(alvo[i])):
-                alvo[i][j] = (alvo[i][j] - minimum) / (maximum-minimum)
-        return alvo
-
     def normalized_distance2(self, cvf):
         maximum = max(cvf) 
         minimum = min(cvf)
@@ -468,6 +440,14 @@ class DE:
             cvf[i] = (cvf[i] - minimum) / (maximum-minimum)
         return cvf
         #print(cvf) 
+
+    # def normalized_distance3(self, alvo):
+    #     maximum = max([max(p) for p in alvo])
+    #     minimum = min([min(p) for p in alvo])
+    #     for i in range(0, len(alvo)):
+    #         for j in range(0, len(alvo[i])):
+    #             alvo[i][j] = (alvo[i][j] - minimum) / (maximum-minimum)
+    #     return alvo
 
     def update_jDE(self, pop_size):
         Fl = 0.1
@@ -491,8 +471,7 @@ class DE:
             else:
                 self.crossover_rate_T[ind] = self.crossover_rate[ind]     
 
-
-    def michalewicz(self, x, minimum, maximum):  
+    def michalewicz(self, x, minimum, maximum):
         b_a = uniform(0, 1)
         a = uniform(0, 1)
         r = uniform(0.75, 1.0)
@@ -513,7 +492,6 @@ class DE:
         crowding_target = 0
         neighborhood_list = []
         funcs = ["haha", "five_uneven_peak_trap", "equal_maxima", "uneven_decreasing_maxima", "himmelblau", "six_hump_camel_back", "shubert", "vincent", "shubert", "vincent", "modified_rastrigin_all", "CF1", "CF2", "CF3", "CF3", "CF4", "CF3", "CF4", "CF3", "CF4", "CF4", "protein"]
-        #print(">>>>>>>>>>", str(funcs[1]))
         m = 0
         PR = [] #PEAK RATIO
         SR = 0.0
@@ -525,16 +503,12 @@ class DE:
         if os.path.exists(path):
             #to record the results
             results = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/results.txt', 'a')
-            positions_found = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/seeds.txt', 'a')
-            #records = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/records.txt', 'a')
             clusters = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/clusters.txt', 'a')            
         else:
             mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora))
             mkdir(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) +'/graphs')
             #to record the results
             results = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/results.txt', 'a')
-            positions_found = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/seeds.txt', 'a')
-            #records = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/records.txt', 'a')
             clusters = open(str(funcs[nfunc]) + '_' + str(dim) + 'D_' + str(hora) + '/clusters.txt', 'a')
 
 
@@ -542,8 +516,6 @@ class DE:
         
         results.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
         results.write('=================================================================================================================\n')
-        #records.write('ID: %s\tDate: %s\tRuns: %s\n' % (str(funcs[nfunc] ), strftime("%Y-%m-%d %H:%M:%S", gmtime()), str(runs)))
-        #records.write('=================================================================================================================\n')
         avr_fbest_r = []
         avr_diversity_r = []
         avr_nclusters_r = []
@@ -552,16 +524,8 @@ class DE:
         elapTime_r = []
         ub = f.get_ubound(0)
         lb = f.get_lbound(0)
-        min_value_vector = []
-        porcentagem = 0
         maximum_in_all_list = 0
         minimum_in_all_list = 0
-        #print(fileName_function)
-
-        #
-
-
-        #print(path)
 
         #runs
         for r in range(runs):
@@ -572,19 +536,13 @@ class DE:
             count_global = 0.0
             CVF = [0] * pop_size
             CVF_old = [9999] * pop_size
-            CVF_test = [0] * pop_size
             niter = [0] * pop_size
-            niter_best = [0] * pop_size
             elapTime = []
             archive = []
             fpop_archive = []
             niter_flag = 20
             start = time()
-            #records.write('Run: %i\n' % r)
-            #records.write('Iter\tGbest\tAvrFit\tDiver\tETime\t\n')
-            cont_com_append = 0
-            cont_sem_append = 0
-
+            
             clusters.write('Run: %i\n' % r)
             best = [] #global best positions
             fbest = 0.00                    
@@ -612,7 +570,7 @@ class DE:
             # self.pop = pop_aux4
             # fpop = fpop_aux
             #print(len(fpop), len(self.pop))
-            self.pop_aux2 = self.pop
+            #self.pop_aux2 = self.pop
             
             # X = StandardScaler(with_mean=False).fit_transform(self.pop)
 
@@ -671,7 +629,6 @@ class DE:
             fbest,best = self.getBestSolution(maximize, fpop)
             myCR = 0.0
             myF = 0.0
-            cr_list = []
 
             if dim == 2 and flag_plot == 1:
                 plt.ion()
@@ -683,10 +640,6 @@ class DE:
                 #self.contour_plot(xplot, yplot, sc, 0, fig, ax)
             avrFit = 9999999
 
-            #print(max_iterations)
-            fpop_old = [0] * pop_size
-            cont = 0
-            #sleep(5)
             for iteration in range(max_iterations):
 
                 update_progress(iteration/(max_iterations-1))
@@ -759,9 +712,9 @@ class DE:
                 
 
                 k = pop_size - Counter(labels).most_common(1)[0][1]
-                idx = np.argpartition(fpop, -k)
+                #idx = np.argpartition(fpop, -k)
 
-                min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
+                #min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
 
                 # --> Individuos em cada subpopulação.
 
@@ -848,7 +801,7 @@ class DE:
                                 #    dist_min = dist_arq
                                     #print(dist_min)
 
-                            dist_aux = [(float(i))/(max(dist_aux)) for i in dist_aux]
+                            dist_aux = [(float(i))/(max(dist_aux)+0.00001) for i in dist_aux]
                             #print(dist_aux)
                             #print(min(dist_aux), max(dist_aux))
                             dist_min = min(dist_aux)
@@ -878,7 +831,6 @@ class DE:
 
                             else: 
                                 #print("RESETANDO SEM APPEND")
-                                cont_sem_append += 1
                                 self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
                                 niter[i] = 0
                                 CVF[i] = 0
@@ -1020,9 +972,9 @@ class DE:
             #print(fpop)
 
             k = pop_size - Counter(labels).most_common(1)[0][1]
-            idx = np.argpartition(fpop, -k)
+            #idx = np.argpartition(fpop, -k)
 
-            min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
+            #min_value_vector = [fpop[i] for i in idx[-k:] if fpop[i] < -accuracy]
 
             # --> Individuos em cada subpopulação.
 
@@ -1059,9 +1011,9 @@ class DE:
             best_individuals = [0] * n_clusters_2
 
             k = len(archive) - Counter(labels).most_common(1)[0][1]
-            idx = np.argpartition(fpop_archive, -k)
+            #idx = np.argpartition(fpop_archive, -k)
 
-            min_value_vector = [fpop_archive[i] for i in idx[-k:] if fpop_archive[i] < -accuracy]
+            #min_value_vector = [fpop_archive[i] for i in idx[-k:] if fpop_archive[i] < -accuracy]
 
             # --> Individuos em cada subpopulação.
 
@@ -1186,11 +1138,10 @@ class DE:
 
             #a = list(filter(lambda x: x != 0, archive))
             if archive_flag == 0:
-                count, seeds = how_many_goptima(self.pop, f, accuracy, len(self.pop), pop_aux)
+                count = how_many_goptima(self.pop, f, accuracy, len(self.pop), pop_aux)
             elif archive_flag == 1:
-                count, seeds = how_many_goptima(archive2, f, accuracy, len(archive2), pop_aux3)
+                count = how_many_goptima(archive2, f, accuracy, len(archive2), pop_aux3)
 
-            #print(seeds)
             count_global += count
 
             self.pop = []

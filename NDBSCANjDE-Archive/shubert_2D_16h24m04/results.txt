@@ -1,0 +1,18 @@
+ID: shubert	Date: 2019-11-19 19:24:04	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 933
+Funcao Otimizada: <function shubert at 0x7fced77a4048>
+Gbest Overall: 186.7309
+Niter: 20.0000
+ , Positions: [4.858035829323461, 5.482853686454626]
+Mean Peaks Found on Run 0: 1.000000 (18.000000)
+Success rate: 1.0000
+
+Gbest Average: 186.7309
+Gbest Median: 186.7309 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 31.1196
+Elappsed Time Hooke-Jeeves: 0.4806
+Elappsed Time Nelder-Mead: 7.9376
+Final Time recorded: 16h24m44
+=================================================================================================================

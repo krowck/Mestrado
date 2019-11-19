@@ -180,7 +180,7 @@ def how_many_goptima(pop, f, accuracy, popsize, pop_aux):
 	# gather seeds
 	seeds = sorted_pop[goidx]
 	#print(seeds)
-	return count, seeds
+	return count
 
 def find_seeds_indices(sorted_pop, radius):
 	#print(sorted_pop)
