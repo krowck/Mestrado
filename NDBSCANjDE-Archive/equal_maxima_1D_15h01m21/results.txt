@@ -1,0 +1,18 @@
+ID: equal_maxima	Date: 2019-11-22 18:01:21	Runs: 1
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 233
+Funcao Otimizada: <function equal_maxima at 0x7f597bf18950>
+Gbest Overall: 1.0000
+Niter: 20.0600
+ , Positions: [0.7000000005411595]
+Mean Peaks Found on Run 0: 1.000000 (5.000000)
+Success rate: 1.0000
+
+Gbest Average: 1.0000
+Gbest Median: 1.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Elappsed Time Average: 7.9458
+Elappsed Time Hooke-Jeeves: 0.0126
+Elappsed Time Nelder-Mead: 0.1371
+Final Time recorded: 15h01m30
+=================================================================================================================

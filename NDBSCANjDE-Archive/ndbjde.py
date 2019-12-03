@@ -20,10 +20,12 @@ from collections import Counter
 from eucl_dist.cpu_dist import dist
 #from eucl_dist.gpu_dist import dist as gdist
 from sklearn.cluster import DBSCAN
+from hdbscan import HDBSCAN
 from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics.pairwise import euclidean_distances
 from heapq import nlargest
+
 import os
 
 def equal_maxima(x):
@@ -377,12 +379,18 @@ class DE:
                 ind[d] = ub[d] 
 
     def euclidean_distance_full2(self, dim):
-        dist1 = np.zeros((len(self.pop), dim))
-        self.pop = np.asarray(self.pop) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
-        dist1 = dist(self.pop, self.pop)
-        self.pop = self.pop.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
+        #dist1 = np.zeros((len(self.pop), dim))
+        #self.pop = np.asarray(self.pop) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
+        #dist1 = dist(self.pop, self.pop)
+        #self.pop = self.pop.tolist() #necessario voltar para lista para nao afetar a programacao feita anteriormente
+        #dist1 = dist1.tolist()
+        #self.full_euclidean.append(dist1)
+        dist1 = distance.cdist(self.pop, self.pop, 'euclidean')
         dist1 = dist1.tolist()
         self.full_euclidean.append(dist1)
+        #print(self.pop)
+        #print(dist1)
+        #sleep(10)
 
     # def euclidean_distance_full3(self, dim, alvo):
     #     dist1 = np.zeros((len(alvo), dim))
@@ -393,6 +401,7 @@ class DE:
     #     return dist1
 
     def euclidean_distance2(self, alvo, dim):
+        #dist1 = []
         dist1 = np.zeros((len(self.pop), dim))
         alvo = np.asarray([alvo])
         self.pop = np.asarray(self.pop) #necessario para utilizar a funcao eucl_dist -- otimizacao da distancia euclidiana
@@ -572,7 +581,7 @@ class DE:
             #print(len(fpop), len(self.pop))
             #self.pop_aux2 = self.pop
             
-            # X = StandardScaler(with_mean=False).fit_transform(self.pop)
+            # X = StandardScaler().fit_transform(self.pop)
 
             # db = DBSCAN(eps=0.01, min_samples=1).fit(X)
             # core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
@@ -698,15 +707,17 @@ class DE:
                 # print(self.pop)
 
 
-                X = StandardScaler(with_mean=False).fit_transform(self.pop)
+                X = StandardScaler().fit_transform(self.pop)
 
                 db = DBSCAN(eps=eps_value, min_samples=1).fit(X)
-                core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-                core_samples_mask[db.core_sample_indices_] = True
+                #db = HDBSCAN(min_cluster_size=4).fit(X)
+                #core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                #core_samples_mask[db.core_sample_indices_] = True
                 labels = db.labels_
 
                 n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 
+                
                 temp = [0] * n_clusters_
                 best_individuals = [0] * n_clusters_
                 
@@ -721,6 +732,7 @@ class DE:
                 for j in range(n_clusters_):
                     temp[j] = [i for i,x in enumerate(labels) if x==j] 
 
+                
                 # # Black removed and is used for noise instead.
                 # # Black removed and is used for noise instead.
                 # unique_labels = set(labels)
@@ -749,8 +761,26 @@ class DE:
                 #print(len(max(temp, key=len)))
                 #print(iteration)       
                 #sleep(100)
-
+                
                 # ------------------------------- START ARCHIVE TECHNIQUE ---------------------------------
+                if(iteration == 0):
+                    temp_old = temp
+                else:
+                    if len(temp_old) == len(temp):
+                        for ctrl in range(n_clusters_):
+                            if(temp[ctrl] == temp_old[ctrl]):
+                                pass
+                            else:
+                                #print(temp[ctrl], temp_old[ctrl])
+                                niter[ctrl] = 0
+                    #else:
+
+                #print(temp)
+                #print(temp_old)
+                
+                temp_old = temp
+
+                
 
                 for i in range(n_clusters_):
                     if(len(temp[i]) > 1):
@@ -899,11 +929,12 @@ class DE:
                 # ----------------------------- END ARCHIVE TECHNIQUE ----------------------------------
 
                 #print(sorted(self.pop) == sorted(self.pop_aux2))
-                X = StandardScaler(with_mean=False).fit_transform(self.pop)
+                X = StandardScaler().fit_transform(self.pop)
 
                 db = DBSCAN(eps=eps_value, min_samples=1).fit(X)
-                core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-                core_samples_mask[db.core_sample_indices_] = True
+                #db = HDBSCAN(min_cluster_size=4).fit(X)
+                #core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+                #core_samples_mask[db.core_sample_indices_] = True
                 labels = db.labels_
 
                 # Number of clusters in labels, ignoring noise if present.
@@ -957,11 +988,12 @@ class DE:
             if(dim == 1):
                 eps_value = 0.05
 
-            X = StandardScaler(with_mean=False).fit_transform(self.pop)
+            X = StandardScaler().fit_transform(self.pop)
 
             db = DBSCAN(eps=eps_value, min_samples=1).fit(X)
-            core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-            core_samples_mask[db.core_sample_indices_] = True
+            #db = HDBSCAN(min_cluster_size=4).fit(X)
+            #core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+            #core_samples_mask[db.core_sample_indices_] = True
             labels = db.labels_
 
             n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
@@ -998,11 +1030,12 @@ class DE:
             fpop_archive = []
             fpop_archive = self.evaluatePopulation(archive, nfunc, f)
             #print(fpop_archive)
-            X = StandardScaler(with_mean=False).fit_transform(archive)
+            X = StandardScaler().fit_transform(archive)
 
             db = DBSCAN(eps=0.05, min_samples=1).fit(X)
-            core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-            core_samples_mask[db.core_sample_indices_] = True
+            #db = HDBSCAN(min_cluster_size=4).fit(X)
+            #core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+            #core_samples_mask[db.core_sample_indices_] = True
             labels = db.labels_
 
             n_clusters_2 = len(set(labels)) - (1 if -1 in labels else 0)
@@ -1137,6 +1170,7 @@ class DE:
             fpop = self.evaluatePopulation(self.pop, nfunc, f)
 
             #a = list(filter(lambda x: x != 0, archive))
+            #print(archive2)
             if archive_flag == 0:
                 count = how_many_goptima(self.pop, f, accuracy, len(self.pop), pop_aux)
             elif archive_flag == 1:
@@ -1151,7 +1185,7 @@ class DE:
             self.nclusters_list = []
 
             PR.append(count_global/f.get_no_goptima())
-            #print("Peak Ratio: %.4f" % PR[r])
+            print("Peak Ratio: %.4f" % PR[r])
             if(PR[r] == 1):
                 SR += 1
         hora_final = strftime("%Hh%Mm%S", localtime())
