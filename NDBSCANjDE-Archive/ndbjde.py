@@ -20,6 +20,7 @@ from collections import Counter
 from eucl_dist.cpu_dist import dist
 #from eucl_dist.gpu_dist import dist as gdist
 from sklearn.cluster import DBSCAN
+from sklearn.neighbors import NearestNeighbors
 from hdbscan import HDBSCAN
 from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
@@ -706,6 +707,20 @@ class DE:
 
                 # print(self.pop)
 
+                # XX = NearestNeighbors(n_neighbors = 2)
+                # XXX = XX.fit(self.pop)
+                # distances, indices = XXX.kneighbors(self.pop)
+
+                # distances = np.sort(distances, axis=0)
+
+                # distances = distances[:, 1]
+
+                # plt.plot(distances)
+
+                # plt.pause(0.01)
+
+                #plt.clf()
+
 
                 X = StandardScaler().fit_transform(self.pop)
 
@@ -716,6 +731,8 @@ class DE:
                 labels = db.labels_
 
                 n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+
+                #print(n_clusters_)
 
                 
                 temp = [0] * n_clusters_
@@ -763,24 +780,29 @@ class DE:
                 #sleep(100)
                 
                 # ------------------------------- START ARCHIVE TECHNIQUE ---------------------------------
+                    ### FIXING CLUSTER STAGNATION
+                
                 if(iteration == 0):
                     temp_old = temp
+                    n_clusters_old = n_clusters_
                 else:
-                    if len(temp_old) == len(temp):
-                        for ctrl in range(n_clusters_):
-                            if(temp[ctrl] == temp_old[ctrl]):
-                                pass
-                            else:
-                                #print(temp[ctrl], temp_old[ctrl])
-                                niter[ctrl] = 0
-                    #else:
+                    #print(n_clusters_old, len(temp_old))
+                    #print("atual",temp)
+                    #print("old",temp_old)
+                    for ctrl in range(n_clusters_old):
+                        if(temp_old[ctrl] in temp):
+                            pass
+                        else:
+                            #print(temp_old[ctrl], temp)
+                            niter[ctrl] = 0
+                    
+
 
                 #print(temp)
                 #print(temp_old)
-                
+                n_clusters_old = n_clusters_
                 temp_old = temp
 
-                
 
                 for i in range(n_clusters_):
                     if(len(temp[i]) > 1):
@@ -800,10 +822,12 @@ class DE:
                         else:
                             CVF_old[i] = CVF[i]
                             niter[i] = 0
+
+
                     #print(iteration, niter[i], temp[i])
                 #print(n_clusters_)
-                CVF = self.normalized_distance2(CVF)
-
+                #CVF = self.normalized_distance2(CVF)
+                #print(niter)
                 for i in range(n_clusters_):
                     dist_aux = []
                     dist_min = math.inf
@@ -814,8 +838,10 @@ class DE:
                             temp_best = fpop[x]
                             indice_best = x
                         best_individuals[i] = indice_best
-
+                    # if niter[i] > niter_flag + 10:
+                    #     niter[i] = 0
                     if niter[i] >= niter_flag and len(temp[i]) > 1:
+                        #print(niter[i])
                         #print("entrou")
                         if (len(archive) == 0):
                            archive.append(self.pop[indice_best])
@@ -865,57 +891,57 @@ class DE:
                                 niter[i] = 0
                                 CVF[i] = 0
                                 CVF_old[i] = 999999
-                    # elif niter[i] >= niter_flag + 30 and len(temp[i]) == 1:
-                    #     #print("entrou")
-                    #     if (len(archive) == 0):
-                    #        archive.append(self.pop[indice_best])
-                    #        fpop_archive.append(fpop[indice_best])
-                    #        #print(fpop_archive)
-                    #        #sleep(10)
-                    #     else:                        
-                    #         for j in archive:
-                    #             dist_aux.append(np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)))
-                    #             #dist_arq = np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)) 
-                    #             #print(self.pop[indice_best], j)
-                    #             #if dist_arq < dist_min:
-                    #             #    dist_min = dist_arq
-                    #                 #print(dist_min)
+                    elif niter[i] >= niter_flag + 40 and len(temp[i]) == 1:
+                        #print("entrou")
+                        niter[i] = 0
+                        if (len(archive) == 0):
+                           archive.append(self.pop[indice_best])
+                           fpop_archive.append(fpop[indice_best])
+                           #print(fpop_archive)
+                           #sleep(10)
+                        else:                        
+                            for j in archive:
+                                dist_aux.append(np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)))
+                                #dist_arq = np.linalg.norm(np.array(self.pop[indice_best]) - np.array(j)) 
+                                #print(self.pop[indice_best], j)
+                                #if dist_arq < dist_min:
+                                #    dist_min = dist_arq
+                                    #print(dist_min)
 
-                    #         dist_aux = [(float(i))/(max(dist_aux)) for i in dist_aux]
-                    #         #print(dist_aux)
-                    #         #print(min(dist_aux), max(dist_aux))
-                    #         dist_min = min(dist_aux)
-                    #         if dist_min > 0.01:                                
-                    #             if len(archive) >= 400:
-                    #                 min_value = min(fpop_archive)
-                    #                 #print(min_value)
-                    #                 min_index = fpop_archive.index(min_value)
-                    #                 if(fpop[indice_best] > fpop_archive[min_index]):
-                    #                     archive[min_index] = self.pop[indice_best]
-                    #                     fpop_archive[min_index] = fpop[indice_best]
-                    #                     self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
-                    #                     niter[i] = 0
-                    #                     CVF[i] = 0
-                    #                     CVF_old[i] = 99999
-                    #                     niter_flag += 0.01
+                            dist_aux = [(float(i))/(max(dist_aux)+0.00001) for i in dist_aux]
+                            #print(dist_aux)
+                            #print(min(dist_aux), max(dist_aux))
+                            dist_min = min(dist_aux)
+                            if dist_min > 0.01:                                
+                                if len(archive) >= 300:
+                                    min_value = min(fpop_archive)
+                                    #print(min_value)
+                                    min_index = fpop_archive.index(min_value)
+                                    if(fpop[indice_best] > fpop_archive[min_index]):
+                                        archive[min_index] = self.pop[indice_best]
+                                        fpop_archive[min_index] = fpop[indice_best]
+                                        self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                                        niter[i] = 0
+                                        CVF[i] = 0
+                                        CVF_old[i] = 99999
+                                        niter_flag += 0.01
 
-                    #             else:                                    
-                    #                 archive.append(self.pop[indice_best])
-                    #                 fpop_archive.append(fpop[indice_best])
-                    #                 self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
-                    #                 niter[i] = 0
-                    #                 CVF[i] = 0
-                    #                 CVF_old[i] = 99999
-                    #                 niter_flag += 0.01
-                    #                 #print(self.pop[indice_best], archive[-1], dist_min)
+                                else:                                    
+                                    archive.append(self.pop[indice_best])
+                                    fpop_archive.append(fpop[indice_best])
+                                    self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                                    niter[i] = 0
+                                    CVF[i] = 0
+                                    CVF_old[i] = 99999
+                                    niter_flag += 0.01
+                                    #print(self.pop[indice_best], archive[-1], dist_min)
 
-                    #         else: 
-                    #             #print("RESETANDO SEM APPEND")
-                    #             cont_sem_append += 1
-                    #             self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
-                    #             niter[i] = 0
-                    #             CVF[i] = 0
-                    #             CVF_old[i] = 999999
+                            else: 
+                                #print("RESETANDO SEM APPEND")
+                                self.generateNewIndividualsFromSubPopulation(temp[i], dim, f)
+                                niter[i] = 0
+                                CVF[i] = 0
+                                CVF_old[i] = 999999
                     if len(temp[i]) >= 4:
                     #if len(max(temp, key=len)) > 20:
                         #print("entrou", len(max(temp, key=len)))
@@ -1088,7 +1114,7 @@ class DE:
             
             #sleep(10)
 
-            itermax_archive = 500
+            itermax_archive = 150
             #print("Arquivo sem DBSCAN: ", len(archive), "Arquivo com DBSCAN", len(archive2), (itermax_archive), "niter_flag", niter_flag)
             rho = 0.85
             eps = 1.0E-30
@@ -1104,38 +1130,40 @@ class DE:
                     self.pop[ind] = endpt
             elif archive_flag == 1:
             #     #print("a")
-            # #LOCAL SERACH ROUTINE WITH ARCHIVE
-                
+            # #LOCAL SERACH ROUTINE WITH ARCHIVE                
                 #print("DEPOIS DO HOOKE JEEVES ", archive2)
                 seconds_nelder_start = time()
-                for ind in range(0,len(archive2)):
-                    ### NELDER MEAD           
-                    #print("Antes: ", f.evaluate(archive2[ind]))         
-                    it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.2)
-                    archive2[ind] = it.tolist()
+                # for ind in range(0,len(archive2)):
+                #     ### NELDER MEAD           
+                #     #print("Antes: ", f.evaluate(archive2[ind]))         
+                #     it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.7)
+                #     archive2[ind] = it.tolist()
                     #print("Nelder Mead: ", f.evaluate(archive2[ind]))
                 
                 for ind in range(0,len(archive2)):
                     ### NELDER MEAD                    
-                    it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.7)
-                    archive2[ind] = it.tolist()
+                    #it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.7)
+                    it, endpt = hooke(dim, archive2[ind], rho, eps, 500, f) 
+                    archive2[ind] = endpt
+                    #archive2[ind] = it.tolist()
+
                     #print("Nelder Mead: ", archive2[ind] )
                 seconds_nelder_end = time()
 
-                fpop = self.evaluatePopulation(archive2, func, f)
+                #fpop = self.evaluatePopulation(archive2, func, f)
 
-                top_2_idx = np.argsort(fpop)[-50:]
+                #top_2_idx = np.argsort(fpop)[-50:]
 
                 #print(top_2_idx, archive3)
-                seconds_hj_start = time()
-                for ind in top_2_idx:
-                    ## HOOKE JEEVES
-                    #print("Antes:", f.evaluate(archive2[ind]))
-                    it, endpt = hooke(dim, archive2[ind], rho, eps, 300, f) 
-                    #print(it)
-                    archive2[ind] = endpt
-                    #print("Hooke-Jeeves", f.evaluate(archive2[ind]))
-                seconds_hj_end = time()
+                # seconds_hj_start = time()
+                # for ind in top_2_idx:
+                #     ## HOOKE JEEVES
+                #     #print("Antes:", f.evaluate(archive2[ind]))
+                #     it, endpt = hooke(dim, archive2[ind], rho, eps, 300, f) 
+                #     #print(it)
+                #     archive2[ind] = endpt
+                #     #print("Hooke-Jeeves", f.evaluate(archive2[ind]))
+                # seconds_hj_end = time()
                 #print(archive2)
                     
                 

@@ -1,0 +1,28 @@
+ID: vincent	Date: 2019-12-06 17:16:27	Runs: 5
+=================================================================================================================
+Tamanho da populacao: 150
+Iteracoes Maximas: 1866
+Funcao Otimizada: <function vincent at 0x7f9f257a01e0>
+Gbest Overall: 1.0000
+Niter: 20.6000
+ , Positions: [7.7062772453073585, 7.706277255165032, 2.1932800475209526]
+Mean Peaks Found on Run 0: 0.449074 (97.000000)
+Mean Peaks Found on Run 1: 0.425926 (92.000000)
+Mean Peaks Found on Run 2: 0.467593 (101.000000)
+Mean Peaks Found on Run 3: 0.425926 (92.000000)
+Mean Peaks Found on Run 4: 0.430556 (93.000000)
+Mean Peaks Found: 0.4398
+Peak Ratio Standard Deviation: 0.0182
+[0.44907, 0.42593, 0.46759, 0.42593, 0.43056, ]
+Success rate: 0.0000
+
+Gbest Average: 1.0000
+Gbest Median: 1.0000 #probably should use median to represent due probably non-normal distribution (see Shapiro-Wilk normality test)
+Gbest Standard Deviation: 0.0000
+
+Elappsed Time Average: 71.8759
+Elappsed Time Hooke-Jeeves: 0.2804
+Elappsed Time Nelder-Mead: 4.5004
+Final Time recorded: 14h22m54
+Elappsed Time Standard Deviation: 0.4098
+=================================================================================================================
