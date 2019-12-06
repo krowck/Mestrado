@@ -719,7 +719,7 @@ class DE:
 
                 # plt.pause(0.01)
 
-                #plt.clf()
+                # plt.clf()
 
 
                 X = StandardScaler().fit_transform(self.pop)
