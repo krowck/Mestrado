@@ -678,6 +678,7 @@ class DE:
                     #crossover_rate[ind] = 0.1
                     myCR = self.crossover_rate_T[ind]
                     myF = self.mutation_rate_T[ind]
+                    #print(self.crossover_rate_T, self.mutation_rate_T)
 
                     if uniform(0,1) < 1:
                         neighborhood_list = self.generate_neighborhood(ind, m, dim, f)
@@ -793,13 +794,12 @@ class DE:
                         if(temp_old[ctrl] in temp):
                             pass
                         else:
-                            #print(temp_old[ctrl], temp)
-                            niter[ctrl] = 0
-                    
 
+                            #print("old" , temp_old[ctrl], "new", temp)
+                            #print(temp_old.index(temp_old[ctrl]))
+                            niter[temp_old.index(temp_old[ctrl])] = 0
+                            
 
-                #print(temp)
-                #print(temp_old)
                 n_clusters_old = n_clusters_
                 temp_old = temp
 
@@ -824,10 +824,6 @@ class DE:
                             niter[i] = 0
 
 
-                    #print(iteration, niter[i], temp[i])
-                #print(n_clusters_)
-                #CVF = self.normalized_distance2(CVF)
-                #print(niter)
                 for i in range(n_clusters_):
                     dist_aux = []
                     dist_min = math.inf
@@ -841,8 +837,6 @@ class DE:
                     # if niter[i] > niter_flag + 10:
                     #     niter[i] = 0
                     if niter[i] >= niter_flag and len(temp[i]) > 1:
-                        #print(niter[i])
-                        #print("entrou")
                         if (len(archive) == 0):
                            archive.append(self.pop[indice_best])
                            fpop_archive.append(fpop[indice_best])
@@ -862,7 +856,7 @@ class DE:
                             #print(min(dist_aux), max(dist_aux))
                             dist_min = min(dist_aux)
                             if dist_min > 0.01:                                
-                                if len(archive) >= 300:
+                                if len(archive) >= 600:
                                     min_value = min(fpop_archive)
                                     #print(min_value)
                                     min_index = fpop_archive.index(min_value)
@@ -913,7 +907,7 @@ class DE:
                             #print(min(dist_aux), max(dist_aux))
                             dist_min = min(dist_aux)
                             if dist_min > 0.01:                                
-                                if len(archive) >= 300:
+                                if len(archive) >= 600:
                                     min_value = min(fpop_archive)
                                     #print(min_value)
                                     min_index = fpop_archive.index(min_value)
@@ -1133,37 +1127,38 @@ class DE:
             # #LOCAL SERACH ROUTINE WITH ARCHIVE                
                 #print("DEPOIS DO HOOKE JEEVES ", archive2)
                 seconds_nelder_start = time()
-                # for ind in range(0,len(archive2)):
-                #     ### NELDER MEAD           
-                #     #print("Antes: ", f.evaluate(archive2[ind]))         
-                #     it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.7)
-                #     archive2[ind] = it.tolist()
+                for ind in range(0,len(archive2)):
+                    ### NELDER MEAD           
+                    #print("Antes: ", f.evaluate(archive2[ind]))         
+                    it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.7)
+                    archive2[ind] = it.tolist()
                     #print("Nelder Mead: ", f.evaluate(archive2[ind]))
                 
                 for ind in range(0,len(archive2)):
                     ### NELDER MEAD                    
-                    #it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.7)
-                    it, endpt = hooke(dim, archive2[ind], rho, eps, 500, f) 
-                    archive2[ind] = endpt
-                    #archive2[ind] = it.tolist()
+                    it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.2)
+                    archive2[ind] = it.tolist()
+                    #it, endpt = hooke(dim, archive2[ind], rho, eps, 500, f) 
+                    #archive2[ind] = endpt
+                    
 
                     #print("Nelder Mead: ", archive2[ind] )
                 seconds_nelder_end = time()
 
-                #fpop = self.evaluatePopulation(archive2, func, f)
+                fpop = self.evaluatePopulation(archive2, func, f)
 
-                #top_2_idx = np.argsort(fpop)[-50:]
+                top_2_idx = np.argsort(fpop)[-50:]
 
                 #print(top_2_idx, archive3)
-                # seconds_hj_start = time()
-                # for ind in top_2_idx:
-                #     ## HOOKE JEEVES
-                #     #print("Antes:", f.evaluate(archive2[ind]))
-                #     it, endpt = hooke(dim, archive2[ind], rho, eps, 300, f) 
-                #     #print(it)
-                #     archive2[ind] = endpt
-                #     #print("Hooke-Jeeves", f.evaluate(archive2[ind]))
-                # seconds_hj_end = time()
+                seconds_hj_start = time()
+                for ind in top_2_idx:
+                    ## HOOKE JEEVES
+                    #print("Antes:", f.evaluate(archive2[ind]))
+                    it, endpt = hooke(dim, archive2[ind], rho, eps, 300, f) 
+                    #print(it)
+                    archive2[ind] = endpt
+                    #print("Hooke-Jeeves", f.evaluate(archive2[ind]))
+                seconds_hj_end = time()
                 #print(archive2)
                     
                 
