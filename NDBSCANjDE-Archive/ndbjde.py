@@ -147,21 +147,28 @@ class DE:
         for k in range(dim):
             ub[k] = f.get_ubound(k)
             lb[k] = f.get_lbound(k)
-        vec = sobol_seq.i4_sobol_generate(dim, pop_size)
         
+        ## SOBOL RANDOM NUMBER GENERATION
+        vec = sobol_seq.i4_sobol_generate(dim, pop_size)        
         for i in range(pop_size):
             lp = []
             for d in range(dim):
                 #print(vec[i][d])
                 lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
             self.pop.append(lp)
+        #print(self.pop)
+
+        # self.pop.append([lb[0], lb[0]])
+        # self.pop.append([lb[0], ub[0]])
+        # self.pop.append([ub[0], ub[0]])
+        # self.pop.append([ub[0], lb[0]])
 
         # ### OPPOSITION BASED GENERATION
-        # for i in range(pop_size):
-        #     lp = []
-        #     for d in range(dim):
-        #         lp.append(lb[d] + ub[d] - self.pop[i][d])
-        #     self.pop.append(lp)
+        for i in range(pop_size):
+            lp = []
+            for d in range(dim):
+                lp.append(lb[d] + ub[d] - self.pop[i][d])
+            self.pop.append(lp)
 
         # s = np.random.uniform(0, 1, (pop_size, dim))
 
@@ -171,15 +178,21 @@ class DE:
         #         print(s[i][d])
         #         lp.append(lb[d] + s[i][d]*(ub[d] -  lb[d]))
         #     self.pop.append(lp)
-        
+
+
+        ## UNIFORM RANDOM NUMBER GENERATION
         # for ind in range(pop_size):
         #     lp = []
         #     for d in range(dim):
         #         lp.append(uniform(lb[d],ub[d]))
         #     self.pop.append(lp)
-        # print(self.pop)
-        #sleep(10)
 
+        # for i in range(pop_size):
+        #     lp = []
+        #     for d in range(dim):
+        #         lp.append(lb[d] + ub[d] - self.pop[i][d])
+        #     self.pop.append(lp)
+        
     def generateIndividual(self, alvo, dim, f):
         ub = [0] * dim
         lb = [0] * dim
@@ -551,6 +564,7 @@ class DE:
             archive = []
             fpop_archive = []
             niter_flag = 20
+            initial_popsize = 300
             start = time()
             
             clusters.write('Run: %i\n' % r)
@@ -563,24 +577,29 @@ class DE:
                 fbest = math.inf
 
             #initial_generations
-            self.generatePopulation(pop_size, dim, f)
+            self.generatePopulation(initial_popsize, dim, f)
+            
+            # print(self.pop)
+            # print(min(self.pop), max(self.pop))
+            # sleep(10)
             #fpop = f.evaluate
             fpop = self.evaluatePopulation(self.pop, func, f)
+
             ### Generate initial population with opposition based algorithm
-            # indexes = np.argpartition(fpop, -150)[-150:]
-            # #print(indexes, len(indexes))
-            # pop_aux4 = []
-            # fpop_aux = []
-            # for i in range(pop_size):
-            #     pop_aux4.append(self.pop[indexes[i]])
-            #     #print(fpop[indexes[i]])
-            #     fpop_aux.append(fpop[indexes[i]])
+            indexes = np.argpartition(fpop, -pop_size)[-pop_size:]
+            #print(indexes, len(indexes))
+            pop_aux4 = []
+            fpop_aux = []
+            for i in range(pop_size):
+                pop_aux4.append(self.pop[indexes[i]])
+                #print(fpop[indexes[i]])
+                fpop_aux.append(fpop[indexes[i]])
 
             # #print(fpop_aux)
-            # self.pop = pop_aux4
-            # fpop = fpop_aux
+            self.pop = pop_aux4
+            fpop = fpop_aux
             #print(len(fpop), len(self.pop))
-            #self.pop_aux2 = self.pop
+            self.pop_aux2 = self.pop
             
             # X = StandardScaler().fit_transform(self.pop)
 
@@ -974,8 +993,8 @@ class DE:
                     #self.contour_plot(xplot, yplot, sc, iteration, fig, ax)
                     #if iteration == 0:
                     #   sleep(7)
-                    plt.xlim(lb, ub)
-                    plt.ylim(lb, ub)
+                    plt.xlim(lb-0.5, ub+0.5)
+                    plt.ylim(lb-0.5, ub+0.5)
 
                     plt.draw()                
                     
