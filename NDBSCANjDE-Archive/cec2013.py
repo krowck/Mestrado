@@ -19,7 +19,7 @@ class CEC2013(object):
 	__functions_ = {1:five_uneven_peak_trap, 2:equal_maxima, 3:uneven_decreasing_maxima, 
 			4:himmelblau, 5:six_hump_camel_back, 6:shubert, 7:vincent, 8:shubert, 9:vincent,
 			10:modified_rastrigin_all, 11:CF1, 12:CF2, 13:CF3, 14:CF3, 15:CF4, 16:CF3, 
-			17:CF4, 18:CF3, 19:CF4, 20:CF4, 21: protein}
+			17:CF4, 18:CF3, 19:CF4, 20:CF4, 21: protein38, 22: protein64, 23: protein98, 24: protein120}
 	__f_ = None
 	__fopt_ = [200.0, 1.0, 1.0, 200.0, 1.031628453489877, 186.7309088310239, 1.0, 2709.093505572820, 1.0, -2.0, 
 				0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -28,19 +28,19 @@ class CEC2013(object):
 	__nopt_ = [2, 5, 1, 4, 2, 18, 36, 81, 216, 12, 6, 8, 6, 6, 8, 6, 8, 6, 8, 8, 10 ]
 	__maxfes_ = [50000, 50000, 50000, 50000, 50000, 200000, 200000, 400000, 400000, 200000, 
 			200000, 200000, 200000, 400000, 400000, 400000, 400000, 400000, 400000, 400000, 500000 ]
-	__dimensions_ = [1, 1, 1, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2, 3, 3, 5, 5, 10, 10, 20, 38]
+	__dimensions_ = [1, 1, 1, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2, 3, 3, 5, 5, 10, 10, 20, 38, 64, 98, 120]
 
 	def __init__(self, nofunc):
-		assert (nofunc > 0 and nofunc <= 21)
+		assert (nofunc > 0 and nofunc <= 24)
 		self.__nfunc_ = nofunc
-		if (self.__nfunc_ > 0 and self.__nfunc_ < 11 or self.__nfunc_ == 21): 
+		if (self.__nfunc_ > 0 and self.__nfunc_ < 11 or self.__nfunc_ >= 21): 
 			self.__f_ = self.__functions_[self.__nfunc_]
 		else:
 			self.__f_ = self.__functions_[self.__nfunc_]( self.get_dimension() )
 
 	def evaluate(self, x):
 		assert (len(x) == self.get_dimension())
-		if (self.__nfunc_ > 0 and self.__nfunc_ < 11 or self.__nfunc_ == 21): 
+		if (self.__nfunc_ > 0 and self.__nfunc_ < 11 or self.__nfunc_ >= 21): 
 			#print("OI", x)
 			return self.__f_(x)
 		else:
@@ -63,7 +63,7 @@ class CEC2013(object):
 			result = 0.25
 		elif (self.__nfunc_ == 10):
 			result = 0
-		elif (self.__nfunc_ == 21):
+		elif (self.__nfunc_ >= 21 and self.__nfunc_ <= 24):
 			result = -3.14
 		elif (self.__nfunc_ > 10 and self.__nfunc_ <= 20):
 			result = self.__f_.get_lbound(n)
@@ -87,7 +87,7 @@ class CEC2013(object):
 			result = 10
 		elif (self.__nfunc_ == 10):
 			result = 1
-		elif (self.__nfunc_ == 21):
+		elif (self.__nfunc_ >= 21 and self.__nfunc_ <= 24):
 			result = 3.14
 		elif (self.__nfunc_ > 10 and self.__nfunc_ <= 20):
 			result = self.__f_.get_ubound(n)

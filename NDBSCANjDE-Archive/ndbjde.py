@@ -21,7 +21,6 @@ from eucl_dist.cpu_dist import dist
 #from eucl_dist.gpu_dist import dist as gdist
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
-from hdbscan import HDBSCAN
 from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics.pairwise import euclidean_distances
@@ -1283,7 +1282,7 @@ class DE:
 
 if __name__ == '__main__': 
     from ndbjde import DE
-    funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4, protein]
+    funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4, protein38, protein64, protein98, protein120]
     #nfunc = 1
     parser = argparse.ArgumentParser()
 

@@ -158,11 +158,174 @@ def modified_rastrigin_all(x = None):
         result += (10 + 9*math.cos(2*math.pi*k[i]*x[i]))        
     return -result
 
-def protein(individual = None):
+def protein38(individual = None):
     #print(individual)
     size = len(individual)
     a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
     AB_21 = "AAAABABABABABAABAABBAAABBABAABBBABABAB"
+    
+    i = 0
+    j = 0
+
+    x = [0] * size
+    y = [0] * size
+
+    x[0] = y[0] = 0
+    x[1] = 1
+    y[1] = 0
+    # amino_pos[0].x = amino_pos[0].y = 0;
+    # amino_pos[1].x = 1;
+    # amino_pos[1].y = 0;
+
+    for i in range(1, size-1):
+        a_ab = x[i] - x[i-1]
+        b_ab = y[i] - y[i-1]
+        x[i+1] = x[i] + a_ab * math.cos(individual[i-1]) - b_ab * math.sin(individual[i-1])
+        y[i+1] = y[i] + b_ab * math.cos(individual[i-1]) + a_ab * math.sin(individual[i-1])
+    
+    # for (i = 1; i < (size-1); i++)
+    #     a_ab = amino_pos[i].x-amino_pos[i-1].x;
+    #     b_ab = amino_pos[i].y-amino_pos[i-1].y;
+    #     amino_pos[i+1].x = amino_pos[i].x+a_ab*cos(individual[i-1])-b_ab*sin(individual[i-1]);
+    #     amino_pos[i+1].y = amino_pos[i].y+b_ab*cos(individual[i-1])+a_ab*sin(individual[i-1]);
+
+    v1 = 0
+    for i in range(1, size-1):
+        v1 += (1.0 - math.cos(individual[i-1])) / 4.0
+
+    # for( i = 1; i < ( size - 1 ); i++ )
+    #     v1 += (1.0 - cos(individual[i-1]) ) / 4.0;
+    
+
+    v2 = 0
+    for i in range(0, size-2):
+        for j in range(i+2, size):
+            if AB_21[i] == 'A' and AB_21[j] == 'A':
+                c_ab = 1
+            elif AB_21[i] == 'B' and AB_21[j] == 'B':
+                c_ab = 0.5
+            else:
+                c_ab = -0.5
+
+            d_ab = math.sqrt(((x[i] - x[j]) * (x[i]- x[j])) + ((y[i] - y[j]) * (y[i] - y[j])))
+            v2 += 4.0 * (1 / math.pow(d_ab, 12) - c_ab / math.pow(d_ab, 6))
+
+    return -(v1 + v2)
+
+def protein64(individual = None):
+    #print(individual)
+    size = len(individual)
+    a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
+    AB_21 = "ABBABAABBABABBBAABBABABBBABBABABBABABBABABABAABABBAABBABBBAAABAB"
+    
+    i = 0
+    j = 0
+
+    x = [0] * size
+    y = [0] * size
+
+    x[0] = y[0] = 0
+    x[1] = 1
+    y[1] = 0
+    # amino_pos[0].x = amino_pos[0].y = 0;
+    # amino_pos[1].x = 1;
+    # amino_pos[1].y = 0;
+
+    for i in range(1, size-1):
+        a_ab = x[i] - x[i-1]
+        b_ab = y[i] - y[i-1]
+        x[i+1] = x[i] + a_ab * math.cos(individual[i-1]) - b_ab * math.sin(individual[i-1])
+        y[i+1] = y[i] + b_ab * math.cos(individual[i-1]) + a_ab * math.sin(individual[i-1])
+    
+    # for (i = 1; i < (size-1); i++)
+    #     a_ab = amino_pos[i].x-amino_pos[i-1].x;
+    #     b_ab = amino_pos[i].y-amino_pos[i-1].y;
+    #     amino_pos[i+1].x = amino_pos[i].x+a_ab*cos(individual[i-1])-b_ab*sin(individual[i-1]);
+    #     amino_pos[i+1].y = amino_pos[i].y+b_ab*cos(individual[i-1])+a_ab*sin(individual[i-1]);
+
+    v1 = 0
+    for i in range(1, size-1):
+        v1 += (1.0 - math.cos(individual[i-1])) / 4.0
+
+    # for( i = 1; i < ( size - 1 ); i++ )
+    #     v1 += (1.0 - cos(individual[i-1]) ) / 4.0;
+    
+
+    v2 = 0
+    for i in range(0, size-2):
+        for j in range(i+2, size):
+            if AB_21[i] == 'A' and AB_21[j] == 'A':
+                c_ab = 1
+            elif AB_21[i] == 'B' and AB_21[j] == 'B':
+                c_ab = 0.5
+            else:
+                c_ab = -0.5
+
+            d_ab = math.sqrt(((x[i] - x[j]) * (x[i]- x[j])) + ((y[i] - y[j]) * (y[i] - y[j])))
+            v2 += 4.0 * (1 / math.pow(d_ab, 12) - c_ab / math.pow(d_ab, 6))
+
+    return -(v1 + v2)
+
+def protein98(individual = None):
+    #print(individual)
+    size = len(individual)
+    a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
+    AB_21 = "AABABAAAAAAABBBAAAAAABAABAABBAABABAAABBBAAAABABAAABABBAAABAAABAAABAABBAABAAAAABAAABABBBABBAAABAABA"
+    
+    i = 0
+    j = 0
+
+    x = [0] * size
+    y = [0] * size
+
+    x[0] = y[0] = 0
+    x[1] = 1
+    y[1] = 0
+    # amino_pos[0].x = amino_pos[0].y = 0;
+    # amino_pos[1].x = 1;
+    # amino_pos[1].y = 0;
+
+    for i in range(1, size-1):
+        a_ab = x[i] - x[i-1]
+        b_ab = y[i] - y[i-1]
+        x[i+1] = x[i] + a_ab * math.cos(individual[i-1]) - b_ab * math.sin(individual[i-1])
+        y[i+1] = y[i] + b_ab * math.cos(individual[i-1]) + a_ab * math.sin(individual[i-1])
+    
+    # for (i = 1; i < (size-1); i++)
+    #     a_ab = amino_pos[i].x-amino_pos[i-1].x;
+    #     b_ab = amino_pos[i].y-amino_pos[i-1].y;
+    #     amino_pos[i+1].x = amino_pos[i].x+a_ab*cos(individual[i-1])-b_ab*sin(individual[i-1]);
+    #     amino_pos[i+1].y = amino_pos[i].y+b_ab*cos(individual[i-1])+a_ab*sin(individual[i-1]);
+
+    v1 = 0
+    for i in range(1, size-1):
+        v1 += (1.0 - math.cos(individual[i-1])) / 4.0
+
+    # for( i = 1; i < ( size - 1 ); i++ )
+    #     v1 += (1.0 - cos(individual[i-1]) ) / 4.0;
+    
+
+    v2 = 0
+    for i in range(0, size-2):
+        for j in range(i+2, size):
+            if AB_21[i] == 'A' and AB_21[j] == 'A':
+                c_ab = 1
+            elif AB_21[i] == 'B' and AB_21[j] == 'B':
+                c_ab = 0.5
+            else:
+                c_ab = -0.5
+
+            d_ab = math.sqrt(((x[i] - x[j]) * (x[i]- x[j])) + ((y[i] - y[j]) * (y[i] - y[j])))
+            v2 += 4.0 * (1 / math.pow(d_ab, 12) - c_ab / math.pow(d_ab, 6))
+
+    return -(v1 + v2)
+
+
+def protein120(individual = None):
+    #print(individual)
+    size = len(individual)
+    a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
+    AB_21 = "ABBABBAABABABAABBAAAABAABABBABABBAAABBBAABBBABAAABABBABBABBBBABBBBAABBBBBBBABABBAAAABBBBBBABBBBAAAABBBABABBBBAAAABBABABB"
     
     i = 0
     j = 0
