@@ -148,13 +148,13 @@ class DE:
             lb[k] = f.get_lbound(k)
         
         ## SOBOL RANDOM NUMBER GENERATION
-        vec = sobol_seq.i4_sobol_generate(dim, pop_size)        
-        for i in range(pop_size):
-            lp = []
-            for d in range(dim):
-                #print(vec[i][d])
-                lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
-            self.pop.append(lp)
+        # vec = sobol_seq.i4_sobol_generate(dim, pop_size)        
+        # for i in range(pop_size):
+        #     lp = []
+        #     for d in range(dim):
+        #         #print(vec[i][d])
+        #         lp.append(lb[d] + vec[i][d]*(ub[d] -  lb[d]))
+        #     self.pop.append(lp)
         #print(self.pop)
 
         # self.pop.append([lb[0], lb[0]])
@@ -163,11 +163,11 @@ class DE:
         # self.pop.append([ub[0], lb[0]])
 
         # ### OPPOSITION BASED GENERATION
-        for i in range(pop_size):
-            lp = []
-            for d in range(dim):
-                lp.append(lb[d] + ub[d] - self.pop[i][d])
-            self.pop.append(lp)
+        # for i in range(pop_size):
+        #     lp = []
+        #     for d in range(dim):
+        #         lp.append(lb[d] + ub[d] - self.pop[i][d])
+        #     self.pop.append(lp)
 
         # s = np.random.uniform(0, 1, (pop_size, dim))
 
@@ -180,11 +180,11 @@ class DE:
 
 
         ## UNIFORM RANDOM NUMBER GENERATION
-        # for ind in range(pop_size):
-        #     lp = []
-        #     for d in range(dim):
-        #         lp.append(uniform(lb[d],ub[d]))
-        #     self.pop.append(lp)
+        for ind in range(pop_size):
+            lp = []
+            for d in range(dim):
+                lp.append(uniform(lb[d],ub[d]))
+            self.pop.append(lp)
 
         # for i in range(pop_size):
         #     lp = []
@@ -513,7 +513,7 @@ class DE:
 
         crowding_target = 0
         neighborhood_list = []
-        funcs = ["haha", "five_uneven_peak_trap", "equal_maxima", "uneven_decreasing_maxima", "himmelblau", "six_hump_camel_back", "shubert", "vincent", "shubert", "vincent", "modified_rastrigin_all", "CF1", "CF2", "CF3", "CF3", "CF4", "CF3", "CF4", "CF3", "CF4", "CF4", "protein"]
+        funcs = ["haha", "five_uneven_peak_trap", "equal_maxima", "uneven_decreasing_maxima", "himmelblau", "six_hump_camel_back", "shubert", "vincent", "shubert", "vincent", "modified_rastrigin_all", "CF1", "CF2", "CF3", "CF3", "CF4", "CF3", "CF4", "CF3", "CF4", "CF4", "protein38", "protein64","protein98", "protein120"]
         m = 0
         PR = [] #PEAK RATIO
         SR = 0.0
@@ -599,7 +599,6 @@ class DE:
             fpop = fpop_aux
             #print(len(fpop), len(self.pop))
             self.pop_aux2 = self.pop
-            
             # X = StandardScaler().fit_transform(self.pop)
 
             # db = DBSCAN(eps=0.01, min_samples=1).fit(X)
