@@ -1167,15 +1167,15 @@ class DE:
                 top_2_idx = np.argsort(fpop)[-50:]
 
                 #print(top_2_idx, archive3)
-                seconds_hj_start = time()
-                for ind in top_2_idx:
-                    ## HOOKE JEEVES
-                    #print("Antes:", f.evaluate(archive2[ind]))
-                    it, endpt = hooke(dim, archive2[ind], rho, eps, 300, f) 
-                    #print(it)
-                    archive2[ind] = endpt
-                    #print("Hooke-Jeeves", f.evaluate(archive2[ind]))
-                seconds_hj_end = time()
+                # seconds_hj_start = time()
+                # for ind in top_2_idx:
+                #     ## HOOKE JEEVES
+                #     #print("Antes:", f.evaluate(archive2[ind]))
+                #     it, endpt = hooke(dim, archive2[ind], rho, eps, 300, f) 
+                #     #print(it)
+                #     archive2[ind] = endpt
+                #     #print("Hooke-Jeeves", f.evaluate(archive2[ind]))
+                # seconds_hj_end = time()
                 #print(archive2)
                     
                 
