@@ -241,8 +241,14 @@ class DE:
                 if fpop[ind] <= fbest:
                     fbest = float(fpop[ind])
                     best = [values for values in self.pop[ind]]
-
         return fbest,best
+
+    def getBestSolutionArchive(self, fpop, archive):
+        fbest = fpop[0]
+        for ind in range(1, len(archive)):
+            if fpop[ind] >= fbest:
+                fbest = float(fpop[ind])
+        return fbest
 
     def printPopulation(self, fpop):
         for ind in range(0,len(self.pop)):
@@ -513,7 +519,7 @@ class DE:
 
         crowding_target = 0
         neighborhood_list = []
-        funcs = ["haha", "five_uneven_peak_trap", "equal_maxima", "uneven_decreasing_maxima", "himmelblau", "six_hump_camel_back", "shubert", "vincent", "shubert", "vincent", "modified_rastrigin_all", "CF1", "CF2", "CF3", "CF3", "CF4", "CF3", "CF4", "CF3", "CF4", "CF4", "protein38", "protein64","protein98", "protein120"]
+        funcs = ["haha", "five_uneven_peak_trap", "equal_maxima", "uneven_decreasing_maxima", "himmelblau", "six_hump_camel_back", "shubert", "vincent", "shubert", "vincent", "modified_rastrigin_all", "CF1", "CF2", "CF3", "CF3", "CF4", "CF3", "CF4", "CF3", "CF4", "CF4", "protein", "protein","protein", "protein"]
         m = 0
         PR = [] #PEAK RATIO
         SR = 0.0
@@ -548,6 +554,8 @@ class DE:
         lb = f.get_lbound(0)
         maximum_in_all_list = 0
         minimum_in_all_list = 0
+        fbest_run = [-99999] * runs
+        best_run = [0] * runs
 
         #runs
         for r in range(runs):
@@ -578,7 +586,7 @@ class DE:
             #initial_generations
             self.generatePopulation(initial_popsize, dim, f)
             
-            # print(self.pop)
+            #print(self.pop)
             # print(min(self.pop), max(self.pop))
             # sleep(10)
             #fpop = f.evaluate
@@ -1208,6 +1216,7 @@ class DE:
             pop_aux3 = archive2
 
             fpop = self.evaluatePopulation(self.pop, nfunc, f)
+            fpop_archive = self.evaluatePopulation(archive2, nfunc, f)
 
             #a = list(filter(lambda x: x != 0, archive))
             #print(archive2)
@@ -1223,6 +1232,8 @@ class DE:
             self.diversity = []
             self.fbest_list = []
             self.nclusters_list = []
+
+            fbest_run[r] = self.getBestSolutionArchive(fpop_archive, archive2)
 
             PR.append(count_global/f.get_no_goptima())
             print("Peak Ratio: %.4f" % PR[r])
@@ -1246,7 +1257,7 @@ class DE:
             results.write('Niter: %.4f\n , ' % niter_flag)
             results.write('Positions: %s\n' % str(best_r[fbest_r.index(max(fbest_r))]))
             for i in range(0, runs):
-                results.write('Mean Peaks Found on Run %d: %f (%f)\n' % (i, PR[i], (PR[i]*f.get_no_goptima())))
+                results.write('Mean Peaks Found on Run %d: %f (%f) Best Fitness: %f \n' % (i, PR[i], (PR[i]*f.get_no_goptima()), fbest_run[i]))
             if runs > 1:
                 results.write('Mean Peaks Found: %.4f\n' % (sum(PR)/runs))
                 results.write('Peak Ratio Standard Deviation: %.4f\n' % (stdev(PR)))
@@ -1281,7 +1292,7 @@ class DE:
 
 if __name__ == '__main__': 
     from ndbjde import DE
-    funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4, protein38, protein64, protein98, protein120]
+    funcs = ["haha", five_uneven_peak_trap, equal_maxima, uneven_decreasing_maxima, himmelblau, six_hump_camel_back, shubert, vincent, shubert, vincent, modified_rastrigin_all, CF1, CF2, CF3, CF3, CF4, CF3, CF4, CF3, CF4, CF4, protein, protein, protein, protein]
     #nfunc = 1
     parser = argparse.ArgumentParser()
 

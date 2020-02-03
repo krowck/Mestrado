@@ -158,120 +158,21 @@ def modified_rastrigin_all(x = None):
         result += (10 + 9*math.cos(2*math.pi*k[i]*x[i]))        
     return -result
 
-def protein38(individual = None):
+def protein(individual = None):
     #print(individual)
+
+
     size = len(individual)
     a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
-    AB_21 = "AAAABABABABABAABAABBAAABBABAABBBABABAB"
-    
-    i = 0
-    j = 0
+    if size == 38:
+        AB_21 = "AAAABABABABABAABAABBAAABBABAABBBABABAB"
+    elif size == 64:
+        AB_21 = "ABBABAABBABABBBAABBABABBBABBABABBABABBABABABAABABBAABBABBBAAABAB"
+    elif size == 98:
+        AB_21 = "AABABAAAAAAABBBAAAAAABAABAABBAABABAAABBBAAAABABAAABABBAAABAAABAAABAABBAABAAAAABAAABABBBABBAAABAABA"
+    elif size == 120:
+        AB_21 = "ABBABBAABABABAABBAAAABAABABBABABBAAABBBAABBBABAAABABBABBABBBBABBBBAABBBBBBBABABBAAAABBBBBBABBBBAAAABBBABABBBBAAAABBABABB"
 
-    x = [0] * size
-    y = [0] * size
-
-    x[0] = y[0] = 0
-    x[1] = 1
-    y[1] = 0
-    # amino_pos[0].x = amino_pos[0].y = 0;
-    # amino_pos[1].x = 1;
-    # amino_pos[1].y = 0;
-
-    for i in range(1, size-1):
-        a_ab = x[i] - x[i-1]
-        b_ab = y[i] - y[i-1]
-        x[i+1] = x[i] + a_ab * math.cos(individual[i-1]) - b_ab * math.sin(individual[i-1])
-        y[i+1] = y[i] + b_ab * math.cos(individual[i-1]) + a_ab * math.sin(individual[i-1])
-    
-    # for (i = 1; i < (size-1); i++)
-    #     a_ab = amino_pos[i].x-amino_pos[i-1].x;
-    #     b_ab = amino_pos[i].y-amino_pos[i-1].y;
-    #     amino_pos[i+1].x = amino_pos[i].x+a_ab*cos(individual[i-1])-b_ab*sin(individual[i-1]);
-    #     amino_pos[i+1].y = amino_pos[i].y+b_ab*cos(individual[i-1])+a_ab*sin(individual[i-1]);
-
-    v1 = 0
-    for i in range(1, size-1):
-        v1 += (1.0 - math.cos(individual[i-1])) / 4.0
-
-    # for( i = 1; i < ( size - 1 ); i++ )
-    #     v1 += (1.0 - cos(individual[i-1]) ) / 4.0;
-    
-
-    v2 = 0
-    for i in range(0, size-2):
-        for j in range(i+2, size):
-            if AB_21[i] == 'A' and AB_21[j] == 'A':
-                c_ab = 1
-            elif AB_21[i] == 'B' and AB_21[j] == 'B':
-                c_ab = 0.5
-            else:
-                c_ab = -0.5
-
-            d_ab = math.sqrt(((x[i] - x[j]) * (x[i]- x[j])) + ((y[i] - y[j]) * (y[i] - y[j])))
-            v2 += 4.0 * (1 / math.pow(d_ab, 12) - c_ab / math.pow(d_ab, 6))
-
-    return -(v1 + v2)
-
-def protein64(individual = None):
-    #print(individual)
-    size = len(individual)
-    a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
-    AB_21 = "ABBABAABBABABBBAABBABABBBABBABABBABABBABABABAABABBAABBABBBAAABAB"
-    
-    i = 0
-    j = 0
-
-    x = [0] * size
-    y = [0] * size
-
-    x[0] = y[0] = 0
-    x[1] = 1
-    y[1] = 0
-    # amino_pos[0].x = amino_pos[0].y = 0;
-    # amino_pos[1].x = 1;
-    # amino_pos[1].y = 0;
-
-    for i in range(1, size-1):
-        a_ab = x[i] - x[i-1]
-        b_ab = y[i] - y[i-1]
-        x[i+1] = x[i] + a_ab * math.cos(individual[i-1]) - b_ab * math.sin(individual[i-1])
-        y[i+1] = y[i] + b_ab * math.cos(individual[i-1]) + a_ab * math.sin(individual[i-1])
-    
-    # for (i = 1; i < (size-1); i++)
-    #     a_ab = amino_pos[i].x-amino_pos[i-1].x;
-    #     b_ab = amino_pos[i].y-amino_pos[i-1].y;
-    #     amino_pos[i+1].x = amino_pos[i].x+a_ab*cos(individual[i-1])-b_ab*sin(individual[i-1]);
-    #     amino_pos[i+1].y = amino_pos[i].y+b_ab*cos(individual[i-1])+a_ab*sin(individual[i-1]);
-
-    v1 = 0
-    for i in range(1, size-1):
-        v1 += (1.0 - math.cos(individual[i-1])) / 4.0
-
-    # for( i = 1; i < ( size - 1 ); i++ )
-    #     v1 += (1.0 - cos(individual[i-1]) ) / 4.0;
-    
-
-    v2 = 0
-    for i in range(0, size-2):
-        for j in range(i+2, size):
-            if AB_21[i] == 'A' and AB_21[j] == 'A':
-                c_ab = 1
-            elif AB_21[i] == 'B' and AB_21[j] == 'B':
-                c_ab = 0.5
-            else:
-                c_ab = -0.5
-
-            d_ab = math.sqrt(((x[i] - x[j]) * (x[i]- x[j])) + ((y[i] - y[j]) * (y[i] - y[j])))
-            v2 += 4.0 * (1 / math.pow(d_ab, 12) - c_ab / math.pow(d_ab, 6))
-
-    return -(v1 + v2)
-
-def protein98(individual = None):
-    #print(individual)
-    size = len(individual)
-    a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
-    AB_21 = "AABABAAAAAAABBBAAAAAABAABAABBAABABAAABBBAAAABABAAABABBAAABAAABAAABAABBAABAAAAABAAABABBBABBAAABAABA"
-    
     i = 0
     j = 0
 
@@ -321,56 +222,299 @@ def protein98(individual = None):
     return -(v1 + v2)
 
 
-def protein120(individual = None):
-    #print(individual)
-    size = len(individual)
-    a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
-    AB_21 = "ABBABBAABABABAABBAAAABAABABBABABBAAABBBAABBBABAAABABBABBABBBBABBBBAABBBBBBBABABBAAAABBBBBBABBBBAAAABBBABABBBBAAAABBABABB"
-    
-    i = 0
-    j = 0
 
-    x = [0] * size
-    y = [0] * size
+def protein3D(individual = None):
 
-    x[0] = y[0] = 0
-    x[1] = 1
-    y[1] = 0
-    # amino_pos[0].x = amino_pos[0].y = 0;
-    # amino_pos[1].x = 1;
-    # amino_pos[1].y = 0;
+    points.append(0.0, 0.0, 0.0)
+    points.append(0.0, 1.0, 0.0)
+    points.append(math.cos(individual[0]), 1.0 + math.sin(individual[0]), 0.0)
 
-    for i in range(1, size-1):
-        a_ab = x[i] - x[i-1]
-        b_ab = y[i] - y[i-1]
-        x[i+1] = x[i] + a_ab * math.cos(individual[i-1]) - b_ab * math.sin(individual[i-1])
-        y[i+1] = y[i] + b_ab * math.cos(individual[i-1]) + a_ab * math.sin(individual[i-1])
-    
-    # for (i = 1; i < (size-1); i++)
-    #     a_ab = amino_pos[i].x-amino_pos[i-1].x;
-    #     b_ab = amino_pos[i].y-amino_pos[i-1].y;
-    #     amino_pos[i+1].x = amino_pos[i].x+a_ab*cos(individual[i-1])-b_ab*sin(individual[i-1]);
-    #     amino_pos[i+1].y = amino_pos[i].y+b_ab*cos(individual[i-1])+a_ab*sin(individual[i-1]);
+    x = points[0][2]
+    y = points[1][2]
+    z = points[2][2]
 
-    v1 = 0
-    for i in range(1, size-1):
-        v1 += (1.0 - math.cos(individual[i-1])) / 4.0
+    theta = individual[0]
+    beta = individual[PL-2]
 
-    # for( i = 1; i < ( size - 1 ); i++ )
-    #     v1 += (1.0 - cos(individual[i-1]) ) / 4.0;
-    
+    for i in range(3, PL):
+        x += math.cos(theta[i-2]) * math.cos(beta[i-3])
+        y += math.sin(theta[i-2]) * math.cos(beta[i-3])
+        z += math.sin(beta[i-3])
 
-    v2 = 0
-    for i in range(0, size-2):
-        for j in range(i+2, size):
-            if AB_21[i] == 'A' and AB_21[j] == 'A':
+        points.append(x, y, z)
+
+    v1 = 0.0
+    v2 = 0.0
+
+    for i in range(0, PL-2):
+        v1 += 1 - math.cos(theta[i])
+        for j in range(i+2, PL):
+            if(AB_SQ[i] == 'A' and AB_SQ[j] == 'A'):
                 c_ab = 1
-            elif AB_21[i] == 'B' and AB_21[j] == 'B':
+            elif(AB_SQ[i] == 'B' and AB_SQ[j] == 'B'):
                 c_ab = 0.5
             else:
                 c_ab = -0.5
 
-            d_ab = math.sqrt(((x[i] - x[j]) * (x[i]- x[j])) + ((y[i] - y[j]) * (y[i] - y[j])))
-            v2 += 4.0 * (1 / math.pow(d_ab, 12) - c_ab / math.pow(d_ab, 6))
+            xi = points[i][0]
+            xj = points[j][0]
 
-    return -(v1 + v2)
+            yi = points[i][1]
+            yj = points[j][1]
+
+            zi = points[i][2]
+            zj = points[i][2]
+
+            dx = (xi - xj)
+            dx = dx*dx
+
+            dy = (yi - yj)
+            dy = dy*dy
+
+            dz = (zi - zj)
+            dz = dz*dz
+
+            D = math.sqrt(dx + dy + dz)
+
+            v2 += ( 1 / math.pow(D, 12) - c_ab / math.pow(D,6) )
+
+    print("v1 = %f v2 = %f \n", v1/4.0, 4*v2)
+    print("final energy value: %f \n", (v1/4.0 + 4*v2))
+
+    return ((v1/4.0) + (4*v2))
+
+   
+
+# double evaluate(double * S){
+#   points.clear();
+
+#     points.push_back( std::make_tuple(0.0, 0.0, 0.0) ); // [0]
+#     points.push_back( std::make_tuple(0.0, 1.0, 0.0) ); // [1]
+#   points.push_back( std::make_tuple(cos(S[0]), 1.0 + sin(S[0]), 0.0) ); // [2]
+
+#     double _x, _y, _z;
+#     _x = std::get<0>(points[2]);
+#     _y = std::get<1>(points[2]);
+#     _z = std::get<2>(points[2]);
+
+#     double * theta = &S[0];
+#     double * beta  = &S[PL-2];
+
+#     for( uint16_t i = 3; i < PL; i++ ){
+#         _x += cos(theta[i-2])*cos(beta[i-3]);
+#         _y += sin(theta[i-2])*cos(beta[i-3]);
+#         _z += sin(beta[i-3]);
+
+#         points.push_back(std::make_tuple(_x, _y, _z));
+#     }
+
+#     // printf("Pontos: \n");
+#     // for( uint16_t i = 0; i < PL; i++ ){
+#     //  printf("%.3f %.3f %.3f\n", std::get<0>(points[i]), std::get<1>(points[i]), std::get<2>(points[i]));
+#     // }
+
+#     double v1 = 0.0, v2 = 0.0;
+#     double xi, xj, yi, yj, zi, zj, dx, dy, dz, D;
+#     double c_ab;
+#     for( uint16_t i = 0; i < PL-2; i++ ){
+#         v1 += 1 - cos(theta[i]);
+#         for( uint16_t j = i + 2; j < PL; j++ ){
+#             if (AB_SQ[i] == 'A' && AB_SQ[j] == 'A') //AA bond
+#                 c_ab = 1;
+#             else if (AB_SQ[i] == 'B' && AB_SQ[j] == 'B') //BB bond
+#                 c_ab = 0.5;
+#             else
+#                 c_ab = -0.5; //AB or BA bond
+
+#             xi = std::get<0>(points[i]);
+#             xj = std::get<0>(points[j]);
+
+#             yi = std::get<1>(points[i]);
+#             yj = std::get<1>(points[j]);
+
+#             zi = std::get<2>(points[i]);
+#             zj = std::get<2>(points[j]);
+
+#             dx = (xi - xj);
+#             dx *= dx;
+
+#             dy = (yi - yj);
+#             dy *= dy;
+
+#             dz = (zi - zj);
+#             dz *= dz;
+
+#             D = sqrt(dx + dy + dz);
+
+#             v2 += ( 1 / pow(D, 12) - c_ab / pow(D, 6) );
+#         }
+#     }
+#     // printf("v1: %.4lf v2: %.4lf\n", v1/4, 4*v2);
+#     // printf("Final energy value: %.8lf\n", v1/4 + 4*v2);
+#     return(v1/4 + 4*v2);
+# }
+
+
+
+# def protein64(individual = None):
+#     #print(individual)
+#     size = len(individual)
+#     a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
+#     AB_21 = "ABBABAABBABABBBAABBABABBBABBABABBABABBABABABAABABBAABBABBBAAABAB"
+    
+#     i = 0
+#     j = 0
+
+#     x = [0] * size
+#     y = [0] * size
+
+#     x[0] = y[0] = 0
+#     x[1] = 1
+#     y[1] = 0
+#     # amino_pos[0].x = amino_pos[0].y = 0;
+#     # amino_pos[1].x = 1;
+#     # amino_pos[1].y = 0;
+
+#     for i in range(1, size-1):
+#         a_ab = x[i] - x[i-1]
+#         b_ab = y[i] - y[i-1]
+#         x[i+1] = x[i] + a_ab * math.cos(individual[i-1]) - b_ab * math.sin(individual[i-1])
+#         y[i+1] = y[i] + b_ab * math.cos(individual[i-1]) + a_ab * math.sin(individual[i-1])
+    
+#     # for (i = 1; i < (size-1); i++)
+#     #     a_ab = amino_pos[i].x-amino_pos[i-1].x;
+#     #     b_ab = amino_pos[i].y-amino_pos[i-1].y;
+#     #     amino_pos[i+1].x = amino_pos[i].x+a_ab*cos(individual[i-1])-b_ab*sin(individual[i-1]);
+#     #     amino_pos[i+1].y = amino_pos[i].y+b_ab*cos(individual[i-1])+a_ab*sin(individual[i-1]);
+
+#     v1 = 0
+#     for i in range(1, size-1):
+#         v1 += (1.0 - math.cos(individual[i-1])) / 4.0
+
+#     # for( i = 1; i < ( size - 1 ); i++ )
+#     #     v1 += (1.0 - cos(individual[i-1]) ) / 4.0;
+    
+
+#     v2 = 0
+#     for i in range(0, size-2):
+#         for j in range(i+2, size):
+#             if AB_21[i] == 'A' and AB_21[j] == 'A':
+#                 c_ab = 1
+#             elif AB_21[i] == 'B' and AB_21[j] == 'B':
+#                 c_ab = 0.5
+#             else:
+#                 c_ab = -0.5
+
+#             d_ab = math.sqrt(((x[i] - x[j]) * (x[i]- x[j])) + ((y[i] - y[j]) * (y[i] - y[j])))
+#             v2 += 4.0 * (1 / math.pow(d_ab, 12) - c_ab / math.pow(d_ab, 6))
+
+#     return -(v1 + v2)
+
+# def protein98(individual = None):
+#     #print(individual)
+#     size = len(individual)
+#     a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
+#     AB_21 = "AABABAAAAAAABBBAAAAAABAABAABBAABABAAABBBAAAABABAAABABBAAABAAABAAABAABBAABAAAAABAAABABBBABBAAABAABA"
+    
+#     i = 0
+#     j = 0
+
+#     x = [0] * size
+#     y = [0] * size
+
+#     x[0] = y[0] = 0
+#     x[1] = 1
+#     y[1] = 0
+#     # amino_pos[0].x = amino_pos[0].y = 0;
+#     # amino_pos[1].x = 1;
+#     # amino_pos[1].y = 0;
+
+#     for i in range(1, size-1):
+#         a_ab = x[i] - x[i-1]
+#         b_ab = y[i] - y[i-1]
+#         x[i+1] = x[i] + a_ab * math.cos(individual[i-1]) - b_ab * math.sin(individual[i-1])
+#         y[i+1] = y[i] + b_ab * math.cos(individual[i-1]) + a_ab * math.sin(individual[i-1])
+    
+#     # for (i = 1; i < (size-1); i++)
+#     #     a_ab = amino_pos[i].x-amino_pos[i-1].x;
+#     #     b_ab = amino_pos[i].y-amino_pos[i-1].y;
+#     #     amino_pos[i+1].x = amino_pos[i].x+a_ab*cos(individual[i-1])-b_ab*sin(individual[i-1]);
+#     #     amino_pos[i+1].y = amino_pos[i].y+b_ab*cos(individual[i-1])+a_ab*sin(individual[i-1]);
+
+#     v1 = 0
+#     for i in range(1, size-1):
+#         v1 += (1.0 - math.cos(individual[i-1])) / 4.0
+
+#     # for( i = 1; i < ( size - 1 ); i++ )
+#     #     v1 += (1.0 - cos(individual[i-1]) ) / 4.0;
+    
+
+#     v2 = 0
+#     for i in range(0, size-2):
+#         for j in range(i+2, size):
+#             if AB_21[i] == 'A' and AB_21[j] == 'A':
+#                 c_ab = 1
+#             elif AB_21[i] == 'B' and AB_21[j] == 'B':
+#                 c_ab = 0.5
+#             else:
+#                 c_ab = -0.5
+
+#             d_ab = math.sqrt(((x[i] - x[j]) * (x[i]- x[j])) + ((y[i] - y[j]) * (y[i] - y[j])))
+#             v2 += 4.0 * (1 / math.pow(d_ab, 12) - c_ab / math.pow(d_ab, 6))
+
+#     return -(v1 + v2)
+
+
+# def protein120(individual = None):
+#     #print(individual)
+#     size = len(individual)
+#     a_ab = b_ab = c_ab = d_ab = v1 = v2 = 0
+#     AB_21 = "ABBABBAABABABAABBAAAABAABABBABABBAAABBBAABBBABAAABABBABBABBBBABBBBAABBBBBBBABABBAAAABBBBBBABBBBAAAABBBABABBBBAAAABBABABB"
+    
+#     i = 0
+#     j = 0
+
+#     x = [0] * size
+#     y = [0] * size
+
+#     x[0] = y[0] = 0
+#     x[1] = 1
+#     y[1] = 0
+#     # amino_pos[0].x = amino_pos[0].y = 0;
+#     # amino_pos[1].x = 1;
+#     # amino_pos[1].y = 0;
+
+#     for i in range(1, size-1):
+#         a_ab = x[i] - x[i-1]
+#         b_ab = y[i] - y[i-1]
+#         x[i+1] = x[i] + a_ab * math.cos(individual[i-1]) - b_ab * math.sin(individual[i-1])
+#         y[i+1] = y[i] + b_ab * math.cos(individual[i-1]) + a_ab * math.sin(individual[i-1])
+    
+#     # for (i = 1; i < (size-1); i++)
+#     #     a_ab = amino_pos[i].x-amino_pos[i-1].x;
+#     #     b_ab = amino_pos[i].y-amino_pos[i-1].y;
+#     #     amino_pos[i+1].x = amino_pos[i].x+a_ab*cos(individual[i-1])-b_ab*sin(individual[i-1]);
+#     #     amino_pos[i+1].y = amino_pos[i].y+b_ab*cos(individual[i-1])+a_ab*sin(individual[i-1]);
+
+#     v1 = 0
+#     for i in range(1, size-1):
+#         v1 += (1.0 - math.cos(individual[i-1])) / 4.0
+
+#     # for( i = 1; i < ( size - 1 ); i++ )
+#     #     v1 += (1.0 - cos(individual[i-1]) ) / 4.0;
+    
+
+#     v2 = 0
+#     for i in range(0, size-2):
+#         for j in range(i+2, size):
+#             if AB_21[i] == 'A' and AB_21[j] == 'A':
+#                 c_ab = 1
+#             elif AB_21[i] == 'B' and AB_21[j] == 'B':
+#                 c_ab = 0.5
+#             else:
+#                 c_ab = -0.5
+
+#             d_ab = math.sqrt(((x[i] - x[j]) * (x[i]- x[j])) + ((y[i] - y[j]) * (y[i] - y[j])))
+#             v2 += 4.0 * (1 / math.pow(d_ab, 12) - c_ab / math.pow(d_ab, 6))
+
+#     return -(v1 + v2)
