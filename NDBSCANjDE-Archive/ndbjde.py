@@ -515,7 +515,7 @@ class DE:
             delta = y * (1.0 - pow(a, pw) )
             return x + delta
 
-    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, accuracy, flag_plot, eps_value, archive_flag, maximize=True):
+    def diferentialEvolution(self, pop_size, dim, max_iterations, runs, func, f, nfunc, accuracy, flag_plot, eps_value, archive_flag, nm_flag, hj_flag, maximize=True):
 
         crowding_target = 0
         neighborhood_list = []
@@ -554,7 +554,7 @@ class DE:
         lb = f.get_lbound(0)
         maximum_in_all_list = 0
         minimum_in_all_list = 0
-        fbest_run = [-99999] * runs
+        fbest_run = [-999] * runs
         best_run = [0] * runs
 
         #runs
@@ -1152,38 +1152,39 @@ class DE:
             # #LOCAL SERACH ROUTINE WITH ARCHIVE                
                 #print("DEPOIS DO HOOKE JEEVES ", archive2)
                 seconds_nelder_start = time()
-                for ind in range(0,len(archive2)):
-                    ### NELDER MEAD           
-                    #print("Antes: ", f.evaluate(archive2[ind]))         
-                    it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.7)
-                    archive2[ind] = it.tolist()
-                    #print("Nelder Mead: ", f.evaluate(archive2[ind]))
-                
-                for ind in range(0,len(archive2)):
-                    ### NELDER MEAD                    
-                    it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.2)
-                    archive2[ind] = it.tolist()
-                    #it, endpt = hooke(dim, archive2[ind], rho, eps, 500, f) 
-                    #archive2[ind] = endpt
+                if nm_flag == 1:
+                    for ind in range(0,len(archive2)):
+                        ### NELDER MEAD           
+                        #print("Antes: ", f.evaluate(archive2[ind]))         
+                        it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.7)
+                        archive2[ind] = it.tolist()
+                        #print("Nelder Mead: ", f.evaluate(archive2[ind]))
                     
+                    for ind in range(0,len(archive2)):
+                        ### NELDER MEAD                    
+                        it, endpt = nelder_mead(f, archive2[ind], itermax_archive, 0.2)
+                        archive2[ind] = it.tolist()
+                        #it, endpt = hooke(dim, archive2[ind], rho, eps, 500, f) 
+                        #archive2[ind] = endpt
+                seconds_nelder_end = time()
+                            
 
                     #print("Nelder Mead: ", archive2[ind] )
-                seconds_nelder_end = time()
-
                 fpop = self.evaluatePopulation(archive2, func, f)
 
                 top_2_idx = np.argsort(fpop)[-50:]
 
                 #print(top_2_idx, archive3)
-                # seconds_hj_start = time()
-                # for ind in top_2_idx:
-                #     ## HOOKE JEEVES
-                #     #print("Antes:", f.evaluate(archive2[ind]))
-                #     it, endpt = hooke(dim, archive2[ind], rho, eps, 300, f) 
-                #     #print(it)
-                #     archive2[ind] = endpt
-                #     #print("Hooke-Jeeves", f.evaluate(archive2[ind]))
-                # seconds_hj_end = time()
+                seconds_hj_start = time()
+                if hj_flag == 1:                    
+                    for ind in top_2_idx:
+                    #     ## HOOKE JEEVES
+                        #print("Antes:", f.evaluate(archive2[ind]))
+                        it, endpt = hooke(dim, archive2[ind], rho, eps, 300, f) 
+                        #print(it)
+                        archive2[ind] = endpt
+                        #print("Hooke-Jeeves", f.evaluate(archive2[ind]))
+                seconds_hj_end = time()
                 #print(archive2)
                     
                 
@@ -1302,6 +1303,8 @@ if __name__ == '__main__':
     parser.add_argument('-r', action='store', type=int, help='Number of runs.')
     parser.add_argument('-a', action='store', type=int, help='Archive flag (0 for No, 1 for Yes)')
     parser.add_argument('-flag', action='store', type=int, help='Flag to plot (0 or 1).')
+    parser.add_argument('-nm', action='store', type=int, help='Flag to use Nelder-Mead (0 for No, 1 for Yes).')
+    parser.add_argument('-hj', action='store', type=int, help='Flag to use Hooke-Jeeves (0 for No, 1 for Yes).')
 
     args = parser.parse_args()
 
@@ -1311,6 +1314,8 @@ if __name__ == '__main__':
     runs = (args.r)
     flag_plot = (args.flag)
     archive_flag = (args.a)
+    nm_flag = (args.nm)
+    hj_flag = (args.hj)
 
     #print(nfunc, pop_size, accuracy)
 
@@ -1322,6 +1327,6 @@ if __name__ == '__main__':
     eps_value = 0.1
 
     p = DE(pop_size)
-    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, flag_plot, eps_value, archive_flag, maximize=True)
+    p.diferentialEvolution(pop_size, dim, max_iterations, runs, cost_func, f, nfunc, accuracy, flag_plot, eps_value, archive_flag, nm_flag, hj_flag, maximize=True)
 
 
